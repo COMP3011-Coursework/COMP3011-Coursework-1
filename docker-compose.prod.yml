@@ -1,0 +1,23 @@
+# Production overrides — use with:
+#   docker-compose -f docker-compose.yml -f docker-compose.prod.yml up --build -d
+
+services:
+  backend:
+    volumes:
+      - ./data:/data          # data volume only — no source-code mount
+    command:
+      - uvicorn
+      - app.main:app
+      - --host
+      - "0.0.0.0"
+      - --port
+      - "8000"
+      - --workers
+      - "2"
+
+  frontend:
+    build:
+      context: ./frontend
+      target: production      # nginx static build (not Vite dev server)
+    ports:
+      - "80:80"               # nginx on port 80
