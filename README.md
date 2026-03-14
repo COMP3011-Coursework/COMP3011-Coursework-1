@@ -1,170 +1,178 @@
 # Global Food Price Monitor
 
-A full-stack web application for visualising and analysing global food prices using
-[World Food Programme (WFP)](https://data.humdata.org/dataset/wfp-food-prices) data.
+A full-stack web application for monitoring global food prices using WFP (World Food Programme) data. Built for COMP3011 Web Services and Web Data, University of Leeds.
 
-Built for COMP3011 Web Services and Web Data — University of Leeds, 2025/26.
+## Features
 
-**Stack:** FastAPI · PostgreSQL · React · Vite · TypeScript · Tailwind CSS · Docker
+- **Interactive choropleth map** — Countries coloured by food crisis score
+- **Price explorer** — Filter and paginate WFP price records by country, commodity, and date
+- **Data entry** — Authenticated CRUD for price records
+- **Crisis scoring** — Composite algorithm (volatility + trend + breadth) ranked across all countries
+- **MCP server** — 5 LLM tools exposed over SSE for use with Claude Desktop
 
----
+## Tech stack
 
-## Quick Start
-
-### Prerequisites
-
-- [Docker Desktop](https://www.docker.com/products/docker-desktop/) (includes Docker Compose v2)
-- Git
-
-### 1. Clone the repository
-
-```bash
-git clone <repo-url>
-cd COMP3011-Coursework-1
-```
-
-### 2. Configure environment variables
-
-```bash
-cp .env.example .env
-```
-
-Edit `.env` and set a strong `SECRET_KEY`. The defaults work for local development.
-
-### 3. Add data files
-
-Place the WFP CSV files in a `data/` directory at the repo root:
-
-```text
-data/
-  wfp_commodities_global.csv
-  wfp_currencies_global.csv
-  wfp_markets_global.csv
-  wfp_food_prices_2020.csv
-  wfp_food_prices_2021.csv
-  ...
-```
-
-### 4. Start the full stack
-
-```bash
-docker compose up --build
-```
-
-| Service  | URL                                       |
-|----------|-------------------------------------------|
-| Frontend | <http://localhost:5173>                   |
-| Backend  | <http://localhost:8000>                   |
-| API docs | <http://localhost:8000/docs>              |
-| ReDoc    | <http://localhost:8000/redoc>             |
-| MCP      | <http://localhost:3000/sse>               |
-
-### 5. Seed the database
-
-Once the stack is running (first time only):
-
-```bash
-docker compose exec backend python scripts/seed.py
-```
-
-This imports all CSV data and creates an `admin` user (password: `admin123`).
+| Layer | Technology |
+|---|---|
+| Backend API | FastAPI + SQLAlchemy 2.x async |
+| Database | PostgreSQL 17 |
+| Auth | JWT (python-jose) + bcrypt (passlib) |
+| MCP server | FastMCP (mounted inside FastAPI at `/mcp`) |
+| Frontend | React 18 + Vite + TypeScript + Tailwind CSS |
+| Maps | Leaflet + react-leaflet |
+| Charts | Chart.js + react-chartjs-2 |
+| Deployment | Docker Compose |
 
 ---
 
-## Environment Variables
-
-| Variable            | Description                               | Example                                              |
-|---------------------|-------------------------------------------|------------------------------------------------------|
-| `DATABASE_URL`      | Async SQLAlchemy connection string        | `postgresql+psycopg://user:pass@db:5432/foodpricedb` |
-| `SECRET_KEY`        | JWT signing secret (change in production) | `a-long-random-string`                               |
-| `POSTGRES_DB`       | PostgreSQL database name                  | `foodpricedb`                                        |
-| `POSTGRES_USER`     | PostgreSQL username                       | `foodprice`                                          |
-| `POSTGRES_PASSWORD` | PostgreSQL password                       | `foodprice123`                                       |
-| `CORS_ORIGINS`      | Comma-separated allowed CORS origins      | `http://localhost:5173,http://localhost:3000`        |
-| `VITE_API_URL`      | Backend API base URL for the frontend     | `http://localhost:8000`                              |
-
----
-
-## Running Tests
+## Quick start (Docker)
 
 ```bash
-docker compose exec backend pytest --cov=app --cov-report=term-missing
+cp .env.example .env          # edit SECRET_KEY and passwords
+docker-compose up --build
+```
+
+- Frontend: http://localhost:5173
+- API docs: http://localhost:8000/docs
+- API: http://localhost:8000/api/v1/
+
+### Download GeoJSON (required for map)
+
+The countries GeoJSON is not committed (14 MB). Download it once:
+
+```bash
+curl -sL https://raw.githubusercontent.com/datasets/geo-countries/main/data/countries.geojson \
+  -o frontend/public/data/world.geojson
 ```
 
 ---
 
-## Database Migrations
+## Local development
 
-Generate a new migration after changing models:
+### Backend
 
 ```bash
-docker compose exec backend alembic revision --autogenerate -m "description"
-docker compose exec backend alembic upgrade head
+conda activate COMP3011-Coursework-1
+
+cd backend
+# Run database migrations
+alembic upgrade head
+
+# Seed with WFP data (CSV files from https://data.humdata.org/dataset/wfp-food-prices)
+python scripts/seed.py /path/to/wfp-csv-files/
+
+# Start API server
+uvicorn app.main:app --reload
+```
+
+### Frontend
+
+```bash
+cd frontend
+npm install
+# For local dev without Docker, create .env.local:
+echo "VITE_API_URL=http://localhost:8000/api/v1" > .env.local
+npm run dev
 ```
 
 ---
 
-## MCP Server (Claude Desktop)
+## Environment variables
 
-The MCP server exposes food price tools to AI assistants via the
-[Model Context Protocol](https://modelcontextprotocol.io/).
+Copy `.env.example` and fill in values:
 
-Add the following to your Claude Desktop config
-(`~/Library/Application Support/Claude/claude_desktop_config.json`):
+| Variable | Description |
+|---|---|
+| `DATABASE_URL` | PostgreSQL connection string |
+| `SECRET_KEY` | JWT signing key (generate with `openssl rand -hex 32`) |
+| `CORS_ORIGINS` | Comma-separated allowed origins |
+| `POSTGRES_DB` / `POSTGRES_USER` / `POSTGRES_PASSWORD` | Docker Compose DB config |
+
+---
+
+## API reference
+
+Interactive docs at `/docs` (Swagger UI) and `/redoc`.
+
+### Authentication
+
+| Endpoint | Method | Description |
+|---|---|---|
+| `/api/v1/auth/register` | POST | Create account |
+| `/api/v1/auth/login` | POST | Login, returns JWT |
+
+### Prices
+
+| Endpoint | Method | Auth | Description |
+|---|---|---|---|
+| `/api/v1/prices` | GET | — | List prices (filters: country, commodity_id, market_id, date_from, date_to, page, page_size) |
+| `/api/v1/prices` | POST | ✓ | Create price record |
+| `/api/v1/prices/{id}` | GET | — | Get single price |
+| `/api/v1/prices/{id}` | PUT | ✓ | Update price |
+| `/api/v1/prices/{id}` | DELETE | ✓ | Delete price |
+
+### Analytics
+
+| Endpoint | Description |
+|---|---|
+| `GET /api/v1/analytics/trends?country=&commodity_id=` | Monthly avg price time series |
+| `GET /api/v1/analytics/volatility?country=` | Commodities ranked by price volatility (CoV) |
+| `GET /api/v1/analytics/regional-comparison?commodity_id=` | Avg price per country |
+| `GET /api/v1/analytics/crisis-scores` | All countries ranked by crisis score |
+| `GET /api/v1/analytics/crisis-scores/{country}` | Single-country crisis breakdown |
+| `GET /api/v1/analytics/markets/{market_id}/summary` | Market statistics |
+
+### Reference data
+
+| Endpoint | Description |
+|---|---|
+| `GET /api/v1/countries` | Countries with price data |
+| `GET /api/v1/commodities` | All commodities |
+| `GET /api/v1/markets?country=` | Markets (optionally filtered by country) |
+
+### Crisis score algorithm
+
+```
+volatility = avg(stddev/mean) per commodity over trailing 12 months
+trend      = (latest 3-month avg) / (trailing 12-month avg) − 1
+breadth    = fraction of commodities with latest price > trailing mean
+
+Each component min-max normalised across all countries.
+crisis_score = (0.40 × vol + 0.35 × trend + 0.25 × breadth) × 100
+```
+
+Severity: stable (0–25) · moderate (25–50) · high (50–75) · critical (75–100)
+
+---
+
+## MCP server
+
+The FastMCP server is mounted at `/mcp/sse`. Add to Claude Desktop config:
 
 ```json
 {
   "mcpServers": {
     "food-price-monitor": {
-      "url": "http://localhost:3000/sse"
+      "url": "http://localhost:8000/mcp/sse"
     }
   }
 }
 ```
 
-Available tools:
-
-- `get_global_crisis_overview` — Top 20 countries by food crisis score
-- `get_crisis_summary(country)` — Full crisis breakdown for a country
-- `get_price_trends(country, commodity, months)` — USD price time series
-- `compare_regional_prices(commodity)` — Cross-country price comparison
-- `get_volatile_commodities(country, limit)` — Most volatile commodities
+Available tools: `get_global_crisis_overview`, `get_crisis_summary`, `get_price_trends`, `compare_regional_prices`, `get_volatile_commodities`.
 
 ---
 
-## Project Structure
+## Running tests
 
-```text
-COMP3011-Coursework-1/
-├── backend/           FastAPI application
-│   ├── app/           Application code (models, routers, services)
-│   ├── alembic/       Database migrations
-│   └── scripts/       Utility scripts (seed.py)
-├── frontend/          React + Vite + TypeScript application
-├── mcp-server/        FastMCP server
-├── docs/              Design documents and GenAI logs
-└── docker-compose.yml Full stack orchestration
+Tests require a running PostgreSQL instance (separate test DB is created automatically).
+
+```bash
+conda activate COMP3011-Coursework-1
+cd backend
+
+TEST_DATABASE_URL="postgresql+psycopg://postgres:postgres@localhost:5432/food_monitor_test" \
+  pytest --cov=app --cov-report=term-missing -v
 ```
 
----
-
-## API Documentation
-
-- Interactive (Swagger UI): <http://localhost:8000/docs>
-- Read-only reference (ReDoc): <http://localhost:8000/redoc>
-
-A PDF export of the API documentation is submitted separately via Minerva.
-
----
-
-## Deployment
-
-### Local / Self-hosted
-
-`docker compose up` is the primary deployment method. All services run in Docker containers.
-
-### Frontend on Vercel (optional)
-
-1. Build the frontend: `cd frontend && npm run build`
-2. Deploy `dist/` to Vercel
-3. Set `VITE_API_URL` to your backend's public URL in Vercel environment settings
+Target: ≥80% coverage on routers and services.
