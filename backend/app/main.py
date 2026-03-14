@@ -2,6 +2,10 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from app.config import settings
+from app.routers import analytics as analytics_router_module
+from app.routers import auth as auth_router_module
+from app.routers import prices as prices_router_module
+from app.routers import reference as reference_router_module
 
 
 def create_app() -> FastAPI:
@@ -25,12 +29,10 @@ def create_app() -> FastAPI:
     async def health_check() -> dict[str, str]:
         return {"status": "ok"}
 
-    # Routers will be included here in Phase 2+
-    # from app.routers import prices, analytics, reference, auth
-    # app.include_router(prices.router, prefix="/api/v1")
-    # app.include_router(analytics.router, prefix="/api/v1")
-    # app.include_router(reference.router, prefix="/api/v1")
-    # app.include_router(auth.router, prefix="/api/v1")
+    app.include_router(auth_router_module.router, prefix="/api/v1")
+    app.include_router(prices_router_module.router, prefix="/api/v1")
+    app.include_router(analytics_router_module.router, prefix="/api/v1")
+    app.include_router(reference_router_module.router, prefix="/api/v1")
 
     return app
 
