@@ -1,9 +1,25 @@
-function App() {
+import { BrowserRouter, Route, Routes } from 'react-router-dom'
+import NavBar from './components/NavBar'
+import { AuthProvider } from './contexts/AuthContext'
+import DataEntry from './pages/DataEntry'
+import Dashboard from './pages/Dashboard'
+import Explorer from './pages/Explorer'
+
+export default function App() {
   return (
-    <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-      <h1 className="text-3xl font-bold text-gray-900">Global Food Price Monitor</h1>
-    </div>
+    <AuthProvider>
+      <BrowserRouter>
+        <div className="flex flex-col h-screen">
+          <NavBar />
+          <main className="flex flex-1 overflow-hidden">
+            <Routes>
+              <Route path="/" element={<Dashboard />} />
+              <Route path="/explorer" element={<Explorer />} />
+              <Route path="/data-entry" element={<DataEntry />} />
+            </Routes>
+          </main>
+        </div>
+      </BrowserRouter>
+    </AuthProvider>
   )
 }
-
-export default App
