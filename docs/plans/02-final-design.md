@@ -55,9 +55,9 @@ committed to `frontend/public/data/world.geojson`. Countries joined to crisis sc
 client-side via `ISO_A3` property.
 
 ### MCP server implementation
-Use **FastMCP** (Python library). The MCP server runs as a separate process in Docker Compose,
-importing the same SQLAlchemy session factory as the main API. Tools call internal service
-functions directly (no HTTP round-trip).
+**FastMCP** is mounted directly inside the FastAPI app as an ASGI sub-application at `/mcp`.
+Tools live in `backend/app/mcp/tools.py` and call the service layer directly. No separate
+container — one less Dockerfile, one less Docker service.
 
 ### API documentation export
 FastAPI auto-generates two UIs from the OpenAPI spec:
@@ -98,6 +98,9 @@ COMP3011-Coursework-1/
 │   │   ├── services/
 │   │   │   ├── analytics.py         # Business logic for analytics queries
 │   │   │   └── crisis_score.py      # Crisis scoring algorithm
+│   │   ├── mcp/
+│   │   │   ├── __init__.py
+│   │   │   └── tools.py             # FastMCP tools mounted at /mcp
 │   │   └── auth/
 │   │       ├── jwt.py               # Token creation/verification
 │   │       └── dependencies.py      # FastAPI auth dependencies
@@ -114,11 +117,6 @@ COMP3011-Coursework-1/
 │   ├── Dockerfile
 │   ├── requirements.txt
 │   └── alembic.ini
-├── mcp-server/
-│   ├── server.py                    # FastMCP server
-│   ├── tools.py                     # Tool implementations (call service layer)
-│   ├── requirements.txt
-│   └── Dockerfile
 ├── frontend/
 │   ├── public/
 │   │   └── data/
@@ -302,7 +300,7 @@ get_volatile_commodities(country: str, limit: int = 10)
 # Ranked list of most price-volatile commodities in a country
 ```
 
-MCP server exposes a `/sse` endpoint (or stdio transport). Claude Desktop config provided in README.
+MCP is mounted in the FastAPI app at `/mcp` — accessible at `http://localhost:8000/mcp/sse`. Claude Desktop config provided in README.
 
 ---
 
@@ -376,7 +374,7 @@ docker compose up --build
 # Backend:  http://localhost:8000
 # Frontend: http://localhost:5173
 # Docs:     http://localhost:8000/docs
-# MCP:      http://localhost:3000/sse
+# MCP:      http://localhost:8000/mcp/sse
 ```
 
 ### Self-hosted (production)
@@ -428,10 +426,10 @@ Set `VITE_API_URL` to the backend's public URL in Vercel environment variables.
 6. `GET /analytics/markets/{market_id}/summary`
 
 ### Phase 4 — MCP Server
-1. Install FastMCP, create `mcp-server/` package
-2. Implement 5 tools (call shared service layer)
-3. Add to `docker-compose.yml`
-4. Test with Claude Desktop
+1. Add FastMCP to `backend/requirements.txt`
+2. Create `backend/app/mcp/tools.py` — implement 5 tools calling service layer
+3. Mount at `/mcp` in `main.py` via `app.mount("/mcp", mcp.get_asgi_app())`
+4. Test with Claude Desktop (`http://localhost:8000/mcp/sse`)
 
 ### Phase 5 — Frontend
 1. Vite + React + TypeScript + Tailwind scaffold
