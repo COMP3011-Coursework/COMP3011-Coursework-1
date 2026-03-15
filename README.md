@@ -25,17 +25,6 @@ A full-stack web application for monitoring global food prices using WFP (World 
 
 ---
 
-## Download GeoJSON (required for map)
-
-The countries GeoJSON is not committed (14 MB). Download it once before running the app:
-
-```bash
-curl -sL https://raw.githubusercontent.com/datasets/geo-countries/main/data/countries.geojson \
-  -o frontend/public/data/world.geojson
-```
-
----
-
 ## Prerequisites
 
 | Tool | Version | Notes |
