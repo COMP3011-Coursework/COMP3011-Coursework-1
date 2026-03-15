@@ -1,12 +1,13 @@
 fastapi
 uvicorn[standard]
-sqlalchemy
+sqlalchemy[asyncio]
+greenlet
 alembic
 psycopg[binary]
 pydantic-settings
 fastmcp
 python-jose[cryptography]
-passlib[bcrypt]
+bcrypt
 python-multipart
 httpx
 pytest

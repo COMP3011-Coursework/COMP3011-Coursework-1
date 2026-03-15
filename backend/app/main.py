@@ -1,16 +1,77 @@
+import asyncio
+import logging
+import os
+from contextlib import asynccontextmanager
+from pathlib import Path
+
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from sqlalchemy import text
 
 from app.config import settings
+from app.database import AsyncSessionLocal, Base, engine
 from app.mcp.tools import mcp as mcp_server
+from app.models import Commodity, Currency, Market, Price, User  # noqa: F401 — registers metadata
 from app.routers import analytics as analytics_router_module
 from app.routers import auth as auth_router_module
 from app.routers import prices as prices_router_module
 from app.routers import reference as reference_router_module
 
+logger = logging.getLogger(__name__)
+
+
+async def _auto_seed() -> None:
+    """Download data files if missing, then seed the database if it is empty."""
+    from scripts.seed import (  # type: ignore[import]
+        download_missing,
+        seed_admin_user,
+        seed_commodities,
+        seed_currencies,
+        seed_markets,
+        seed_prices,
+    )
+
+    data_dir = Path(os.environ.get("DATA_DIR", "./data"))
+
+    logger.info("Checking for missing data files…")
+    loop = asyncio.get_event_loop()
+    await loop.run_in_executor(None, download_missing, data_dir)
+
+    async with AsyncSessionLocal() as session:
+        result = await session.execute(text("SELECT COUNT(*) FROM commodities"))
+        count = result.scalar()
+
+    if count and count > 0:
+        return  # already seeded
+
+    logger.info("Database is empty — seeding from %s", data_dir)
+    async with AsyncSessionLocal() as session:
+        await seed_commodities(session, data_dir)
+        await seed_currencies(session, data_dir)
+        await seed_markets(session, data_dir)
+        await seed_prices(session, data_dir)
+        await seed_admin_user(session)
+    logger.info("Seeding complete")
+
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    async with engine.begin() as conn:
+        await conn.run_sync(Base.metadata.create_all)
+    await _auto_seed()
+
+    from app import cache
+    async with AsyncSessionLocal() as session:
+        result = await session.execute(text("SELECT DISTINCT countryiso3 FROM prices"))
+        cache.wfp_countries = {row[0] for row in result.all()}
+    logger.info("Cached %d WFP countries", len(cache.wfp_countries))
+
+    yield
+
 
 def create_app() -> FastAPI:
     app = FastAPI(
+        lifespan=lifespan,
         title="Global Food Price Monitor API",
         description="API for monitoring global food prices using WFP data",
         version="1.0.0",
