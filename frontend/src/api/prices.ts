@@ -27,6 +27,10 @@ export function createPrice(data: PriceCreate, token: string): Promise<Price> {
   return apiFetch('/prices', { method: 'POST', body: JSON.stringify(data) }, token)
 }
 
+export function updatePrice(id: number, data: Partial<PriceCreate>, token: string): Promise<Price> {
+  return apiFetch(`/prices/${id}`, { method: 'PUT', body: JSON.stringify(data) }, token)
+}
+
 export function deletePrice(id: number, token: string): Promise<void> {
   return apiFetch(`/prices/${id}`, { method: 'DELETE' }, token)
 }
