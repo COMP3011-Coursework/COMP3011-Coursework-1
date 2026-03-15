@@ -140,6 +140,13 @@ Interactive docs at `/docs` (Swagger UI) and `/redoc`.
 | `/api/v1/auth/register` | POST | Create account |
 | `/api/v1/auth/login` | POST | Login, returns JWT |
 
+A default admin account is created automatically on first boot:
+
+| Field | Value |
+| --- | --- |
+| Username | `admin` |
+| Password | `admin123` |
+
 ### Prices
 
 | Endpoint | Method | Auth | Description |
