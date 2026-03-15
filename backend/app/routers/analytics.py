@@ -3,6 +3,7 @@ from datetime import date
 from fastapi import APIRouter, Depends, HTTPException, Query, status
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from app import cache
 from app.database import get_db
 from app.schemas.analytics import (
     CrisisScoreResponse,
@@ -59,6 +60,11 @@ async def get_crisis_score_by_country(
     country: str,
     db: AsyncSession = Depends(get_db),
 ) -> CrisisScoreResponse:
+    if cache.wfp_countries and country not in cache.wfp_countries:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"No data found for country '{country}'",
+        )
     results = await compute_crisis_scores(db, country=country)
     if not results:
         raise HTTPException(
