@@ -25,20 +25,9 @@ A full-stack web application for monitoring global food prices using WFP (World 
 
 ---
 
-## Quick start (Docker)
+## Download GeoJSON (required for map)
 
-```bash
-cp .env.example .env          # edit SECRET_KEY and passwords
-docker-compose up --build
-```
-
-- Frontend: <http://localhost:5173>
-- API docs: <http://localhost:8000/docs>
-- API: <http://localhost:8000/api/v1/>
-
-### Download GeoJSON (required for map)
-
-The countries GeoJSON is not committed (14 MB). Download it once:
+The countries GeoJSON is not committed (14 MB). Download it once before running the app:
 
 ```bash
 curl -sL https://raw.githubusercontent.com/datasets/geo-countries/main/data/countries.geojson \
@@ -47,33 +36,59 @@ curl -sL https://raw.githubusercontent.com/datasets/geo-countries/main/data/coun
 
 ---
 
-## Local development
+## Running in development
 
-### Backend
+The easiest way to develop locally is to run only the database in Docker and the backend/frontend natively.
+
+### 1. Start the database
+
+```bash
+cp .env.example .env          # fill in SECRET_KEY and passwords
+docker compose up db -d
+```
+
+### 2. Backend
 
 ```bash
 conda activate COMP3011-Coursework-1
-
-cd backend
-# Run database migrations
-alembic upgrade head
-
-# Seed with WFP data (CSV files from https://data.humdata.org/dataset/wfp-food-prices)
-python scripts/seed.py /path/to/wfp-csv-files/
-
-# Start API server
-uvicorn app.main:app --reload
+./run-backend.sh
 ```
 
-### Frontend
+This runs `uvicorn app.main:app --reload`. On first boot the app automatically downloads WFP data from HDX and seeds the database — no manual seeding step required.
+
+- API: <http://localhost:8000/api/v1/>
+- Docs: <http://localhost:8000/docs>
+
+### 3. Frontend
 
 ```bash
-cd frontend
-npm install
-# For local dev without Docker, create .env.local:
-echo "VITE_API_URL=http://localhost:8000/api/v1" > .env.local
-npm run dev
+./run-frontend.sh
 ```
+
+This runs `npm run dev` inside `frontend/`. The frontend reads `VITE_API_URL` from `.env` in the project root.
+
+- App: <http://localhost:5173>
+
+---
+
+## Running in production (Docker)
+
+```bash
+cp .env.example .env          # fill in SECRET_KEY, passwords, CORS_ORIGINS
+docker compose -f docker-compose.yml -f docker-compose.prod.yml up --build -d
+```
+
+The production compose override:
+
+- Removes the backend source-code bind mount (runs from the built image)
+- Starts uvicorn with 2 workers
+- Builds the frontend with `target: production` (nginx static build on port 80)
+
+| Service | URL |
+| --- | --- |
+| Frontend (nginx) | <http://localhost:80> |
+| API | <http://localhost:8000/api/v1/> |
+| API docs | <http://localhost:8000/docs> |
 
 ---
 
@@ -170,11 +185,15 @@ Available tools: `get_global_crisis_overview`, `get_crisis_summary`, `get_price_
 Tests require a running PostgreSQL instance (separate test DB is created automatically).
 
 ```bash
+# activate test environment
 conda activate COMP3011-Coursework-1
 cd backend
 
-TEST_DATABASE_URL="postgresql+psycopg://postgres:postgres@localhost:5432/food_monitor_test" \
-  pytest --cov=app --cov-report=term-missing -v
+# run all tests
+python -m pytest
+
+# with coverage report
+python -m pytest --cov=app --cov-report=term-missing
 ```
 
-Target: ≥80% coverage on routers and services.
+Target: 100% coverage.
