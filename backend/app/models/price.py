@@ -27,8 +27,8 @@ class Price(Base):
     priceflag: Mapped[str | None] = mapped_column(String(20), nullable=True)
     pricetype: Mapped[str | None] = mapped_column(String(20), nullable=True)
     currency_code: Mapped[str] = mapped_column(String(10), ForeignKey("currencies.code"), nullable=False)
-    price: Mapped[float | None] = mapped_column(NUMERIC(12, 4), nullable=True)
-    usdprice: Mapped[float | None] = mapped_column(NUMERIC(12, 4), nullable=True)
+    price: Mapped[float | None] = mapped_column(NUMERIC(16, 4), nullable=True)
+    usdprice: Mapped[float | None] = mapped_column(NUMERIC(16, 4), nullable=True)
     created_at: Mapped[datetime] = mapped_column(
         TIMESTAMP, server_default=func.now(), nullable=False
     )
