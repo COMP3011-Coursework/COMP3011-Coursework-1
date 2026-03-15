@@ -36,6 +36,41 @@ curl -sL https://raw.githubusercontent.com/datasets/geo-countries/main/data/coun
 
 ---
 
+## Prerequisites
+
+| Tool | Version | Notes |
+| --- | --- | --- |
+| Python | 3.14 | managed via conda |
+| Node.js | 22 | npm 10 |
+| Docker | 24+ | with Compose V2 plugin (`docker compose`) |
+| conda | any | used to create the Python environment |
+
+### Create the Python environment
+
+**Recommended (conda):**
+
+```bash
+conda create -n COMP3011-Coursework-1 python=3.14
+conda activate COMP3011-Coursework-1
+pip install -r backend/requirements.txt
+```
+
+**Alternative (venv):**
+
+```bash
+python3.14 -m venv .venv
+source .venv/bin/activate   # Windows: .venv\Scripts\activate
+pip install -r backend/requirements.txt
+```
+
+### Install frontend dependencies
+
+```bash
+npm install --prefix frontend
+```
+
+---
+
 ## Running in development
 
 The easiest way to develop locally is to run only the database in Docker and the backend/frontend natively.
