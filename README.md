@@ -143,6 +143,8 @@ crisis_score = (0.40 × vol + 0.35 × trend + 0.25 × breadth) × 100
 
 Severity: stable (0–25) · moderate (25–50) · high (50–75) · critical (75–100)
 
+> **Map coverage note:** The choropleth map shows only the ~99 countries monitored by WFP. Developed nations (USA, UK, EU, Australia, etc.) are not tracked by WFP and will always appear gray — this reflects the source data.
+
 ---
 
 ## MCP server
