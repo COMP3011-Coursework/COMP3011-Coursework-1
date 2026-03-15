@@ -7,6 +7,7 @@ import { useApi } from '../hooks/useApi'
 export default function Dashboard() {
   const { data: scores, loading, error } = useApi(getCrisisScores)
   const [selectedIso3, setSelectedIso3] = useState<string | null>(null)
+  const wfpCountries = new Set((scores ?? []).map((s) => s.countryiso3))
 
   return (
     <div className="flex flex-col flex-1 overflow-hidden">
@@ -42,8 +43,8 @@ export default function Dashboard() {
           />
         </div>
 
-        {/* Detail panel */}
-        {selectedIso3 && (
+        {/* Detail panel — only for WFP countries */}
+        {selectedIso3 && wfpCountries.has(selectedIso3) && (
           <CountryDetailPanel
             iso3={selectedIso3}
             onClose={() => setSelectedIso3(null)}

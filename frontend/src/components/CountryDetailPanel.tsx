@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import { getCrisisScore, getTrends, getVolatility } from '../api/analytics'
+import { ApiError } from '../api/client'
 import type { CrisisScore, TrendPoint, VolatilityItem } from '../types'
 import PriceTrendChart from './PriceTrendChart'
 import VolatilityList from './VolatilityList'
@@ -43,6 +44,9 @@ export default function CountryDetailPanel({ iso3, onClose }: Props) {
   useEffect(() => {
     setLoading(true)
     setError(null)
+    setScore(null)
+    setTrends([])
+    setVolatility([])
     let cancelled = false
 
     async function load() {
@@ -65,7 +69,13 @@ export default function CountryDetailPanel({ iso3, onClose }: Props) {
           }
         }
       } catch (err) {
-        if (!cancelled) setError(String(err))
+        if (!cancelled) {
+          if (err instanceof ApiError && err.status === 404) {
+            setError('No WFP food price data available for this country.')
+          } else {
+            setError('Failed to load data. Please try again.')
+          }
+        }
       } finally {
         if (!cancelled) setLoading(false)
       }
