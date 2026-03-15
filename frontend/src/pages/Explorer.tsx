@@ -27,29 +27,32 @@ export default function Explorer() {
     Promise.all([getCountries(), getCommodities()]).then(([c, comms]) => {
       setCountries(c)
       setCommodities(comms)
+      search(1)
     })
   }, [])
 
   async function search(p = 1) {
-    if (!country || !commodityId) return
     setLoading(true)
     setError(null)
     try {
-      const [priceData, trendData] = await Promise.all([
-        fetchPrices({
-          country,
-          commodity_id: Number(commodityId),
-          date_from: dateFrom || undefined,
-          date_to: dateTo || undefined,
-          page: p,
-          page_size: PAGE_SIZE,
-        }),
-        getTrends(country, Number(commodityId), dateFrom || undefined, dateTo || undefined),
-      ])
+      const priceData = await fetchPrices({
+        country: country || undefined,
+        commodity_id: commodityId ? Number(commodityId) : undefined,
+        date_from: dateFrom || undefined,
+        date_to: dateTo || undefined,
+        page: p,
+        page_size: PAGE_SIZE,
+      })
       setPrices(priceData.items)
       setTotal(priceData.total)
-      setTrendPoints(trendData.points)
       setPage(p)
+
+      if (country && commodityId) {
+        const trendData = await getTrends(country, Number(commodityId), dateFrom || undefined, dateTo || undefined)
+        setTrendPoints(trendData.points)
+      } else {
+        setTrendPoints([])
+      }
     } catch (err) {
       setError(String(err))
     } finally {
@@ -58,6 +61,7 @@ export default function Explorer() {
   }
 
   const totalPages = Math.ceil(total / PAGE_SIZE)
+  const commodityMap = new Map(commodities.map((c) => [c.id, c.name]))
 
   return (
     <div className="flex flex-col gap-4 p-4 overflow-y-auto">
@@ -119,7 +123,7 @@ export default function Explorer() {
 
           <button
             onClick={() => search(1)}
-            disabled={!country || !commodityId || loading}
+            disabled={loading}
             className="bg-blue-600 text-white px-4 py-1.5 rounded text-sm font-medium hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
           >
             {loading ? 'Loading…' : 'Search'}
@@ -170,6 +174,7 @@ export default function Explorer() {
                 <tr className="text-left text-xs text-gray-500 uppercase tracking-wide">
                   <th className="px-3 py-2">Date</th>
                   <th className="px-3 py-2">Country</th>
+                  <th className="px-3 py-2">Commodity</th>
                   <th className="px-3 py-2">Market</th>
                   <th className="px-3 py-2">Unit</th>
                   <th className="px-3 py-2 text-right">Price</th>
@@ -182,6 +187,7 @@ export default function Explorer() {
                   <tr key={p.id} className="hover:bg-gray-50">
                     <td className="px-3 py-1.5 font-mono text-xs">{p.date}</td>
                     <td className="px-3 py-1.5">{p.countryiso3}</td>
+                    <td className="px-3 py-1.5 text-gray-600">{commodityMap.get(p.commodity_id) ?? p.commodity_id}</td>
                     <td className="px-3 py-1.5 text-gray-600">{p.market_id}</td>
                     <td className="px-3 py-1.5 text-gray-600">{p.unit ?? '—'}</td>
                     <td className="px-3 py-1.5 text-right font-mono">
@@ -199,7 +205,7 @@ export default function Explorer() {
         </div>
       )}
 
-      {!loading && prices.length === 0 && country && commodityId && (
+      {!loading && prices.length === 0 && (
         <div className="text-center text-gray-400 py-12 text-sm">
           No results. Try different filters.
         </div>
