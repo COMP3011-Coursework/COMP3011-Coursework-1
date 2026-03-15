@@ -110,6 +110,35 @@ class TestListPrices:
         assert data["page"] == 1
         assert data["page_size"] == 2
 
+    async def test_filter_by_market_id(
+        self, client: AsyncClient, commodity, market, currency, auth_headers
+    ):
+        await client.post(
+            "/api/v1/prices",
+            json=price_payload(commodity.id, market.id),
+            headers=auth_headers,
+        )
+        resp = await client.get(f"/api/v1/prices?market_id={market.id}")
+        assert resp.status_code == 200
+        assert resp.json()["total"] >= 1
+
+    async def test_filter_by_date_range(
+        self, client: AsyncClient, commodity, market, currency, auth_headers
+    ):
+        from datetime import timedelta
+        today = date.today()
+        await client.post(
+            "/api/v1/prices",
+            json=price_payload(commodity.id, market.id),
+            headers=auth_headers,
+        )
+        resp = await client.get(
+            f"/api/v1/prices"
+            f"?date_from={today - timedelta(days=1)}&date_to={today + timedelta(days=1)}"
+        )
+        assert resp.status_code == 200
+        assert resp.json()["total"] >= 1
+
 
 class TestUpdatePrice:
     async def test_update_usdprice(

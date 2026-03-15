@@ -54,6 +54,18 @@ class TestTrends:
         assert resp.status_code == 200
         assert resp.json()["points"] == []
 
+    async def test_with_date_filters(
+        self, client: AsyncClient, analytics_seed
+    ):
+        country = analytics_seed["countries"][0]
+        commodity_id = analytics_seed["commodity_ids"][0]
+        resp = await client.get(
+            f"/api/v1/analytics/trends?country={country}&commodity_id={commodity_id}"
+            f"&date_from=2020-01-01&date_to=2030-12-31"
+        )
+        assert resp.status_code == 200
+        assert "points" in resp.json()
+
 
 class TestVolatility:
     async def test_returns_items(
@@ -108,6 +120,17 @@ class TestRegionalComparison:
         prices = [c["avg_usdprice"] for c in resp.json()["countries"]]
         assert prices == sorted(prices, reverse=True)
 
+    async def test_with_date_filters(
+        self, client: AsyncClient, analytics_seed
+    ):
+        commodity_id = analytics_seed["commodity_ids"][0]
+        resp = await client.get(
+            f"/api/v1/analytics/regional-comparison?commodity_id={commodity_id}"
+            f"&date_from=2020-01-01&date_to=2030-12-31"
+        )
+        assert resp.status_code == 200
+        assert "countries" in resp.json()
+
 
 class TestCrisisScores:
     async def test_list_returns_scores(
@@ -143,6 +166,19 @@ class TestCrisisScores:
     ):
         resp = await client.get("/api/v1/analytics/crisis-scores/ZZZ")
         assert resp.status_code == 404
+
+    async def test_by_country_cache_fast_path(
+        self, client: AsyncClient, analytics_seed
+    ):
+        """When wfp_countries cache is populated, unknown country returns 404 via cache check."""
+        from app import cache
+        original = cache.wfp_countries
+        try:
+            cache.wfp_countries = {"AAA", "BBB"}
+            resp = await client.get("/api/v1/analytics/crisis-scores/ZZZ")
+            assert resp.status_code == 404
+        finally:
+            cache.wfp_countries = original
 
 
 class TestMarketSummary:

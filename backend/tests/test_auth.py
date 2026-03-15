@@ -84,3 +84,44 @@ class TestProtectedEndpoints:
         # Attempt to delete without token
         del_resp = await client.delete(f"/api/v1/prices/{price_id}")
         assert del_resp.status_code == 401
+
+    async def test_invalid_token_returns_401(self, client: AsyncClient):
+        resp = await client.delete(
+            "/api/v1/prices/99999",
+            headers={"Authorization": "Bearer not.a.real.token"},
+        )
+        assert resp.status_code == 401
+
+    async def test_token_without_sub_returns_401(self, client: AsyncClient):
+        from app.auth.jwt import create_access_token
+        token = create_access_token({"no_sub": "value"})
+        resp = await client.delete(
+            "/api/v1/prices/99999",
+            headers={"Authorization": f"Bearer {token}"},
+        )
+        assert resp.status_code == 401
+
+    async def test_token_unknown_user_returns_401(self, client: AsyncClient):
+        from app.auth.jwt import create_access_token
+        token = create_access_token({"sub": "ghost_user_not_in_db"})
+        resp = await client.delete(
+            "/api/v1/prices/99999",
+            headers={"Authorization": f"Bearer {token}"},
+        )
+        assert resp.status_code == 401
+
+    async def test_inactive_user_returns_403(
+        self, client: AsyncClient, db, auth_headers, test_user
+    ):
+        from sqlalchemy import select
+        from app.models.user import User
+        user, _ = test_user
+        result = await db.execute(select(User).where(User.id == user.id))
+        db_user = result.scalars().first()
+        db_user.is_active = False
+        await db.flush()
+        resp = await client.delete(
+            "/api/v1/prices/99999",
+            headers=auth_headers,
+        )
+        assert resp.status_code == 403

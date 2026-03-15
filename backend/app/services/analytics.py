@@ -1,6 +1,6 @@
 from datetime import date
 
-from sqlalchemy import func, select, text
+from sqlalchemy import func, literal_column, select, text
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.models.commodity import Commodity
@@ -35,15 +35,16 @@ async def get_price_trends(
     if date_to:
         filters.append(Price.date <= date_to)
 
+    _ym = literal_column("'YYYY-MM'")
     query = (
         select(
-            func.to_char(Price.date, "YYYY-MM").label("month"),
+            func.to_char(Price.date, _ym).label("month"),
             func.avg(Price.usdprice).label("avg_usdprice"),
             func.count().label("count"),
         )
         .where(*filters)
-        .group_by(func.to_char(Price.date, "YYYY-MM"))
-        .order_by(func.to_char(Price.date, "YYYY-MM"))
+        .group_by(func.to_char(Price.date, _ym))
+        .order_by(func.to_char(Price.date, _ym))
     )
     result = await db.execute(query)
     rows = result.all()

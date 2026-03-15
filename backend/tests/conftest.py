@@ -1,8 +1,9 @@
 """Shared pytest fixtures for the backend test suite.
 
 Tests require a running PostgreSQL instance. Set TEST_DATABASE_URL or the
-default postgresql+psycopg://postgres:postgres@localhost:5432/food_monitor_test
-will be used.
+default postgresql+psycopg://foodprice:foodprice123@localhost:5432/food_monitor_test
+will be used. The test database is created automatically and dropped at the end
+of the session.
 """
 
 import os
@@ -10,6 +11,7 @@ from datetime import date, timedelta
 
 import pytest_asyncio
 from httpx import ASGITransport, AsyncClient
+from sqlalchemy import text
 from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine
 
 from app.auth.password import hash_password
@@ -24,18 +26,49 @@ from app.models.user import User
 # ---------------------------------------------------------------------------
 # Test database URL
 # ---------------------------------------------------------------------------
-_default_url = "postgresql+psycopg://postgres:postgres@localhost:5432/food_monitor_test"
+_default_url = "postgresql+psycopg://foodprice:foodprice123@localhost:5432/food_monitor_test"
 TEST_DATABASE_URL = os.getenv("TEST_DATABASE_URL", _default_url)
+
+# Derive maintenance DB URL by swapping the database name to the main app DB
+_maintenance_url = TEST_DATABASE_URL.rsplit("/", 1)[0] + "/foodpricedb"
+
+
+# ---------------------------------------------------------------------------
+# Session-scoped: create the test database, then drop it when done
+# ---------------------------------------------------------------------------
+@pytest_asyncio.fixture(scope="session", autouse=True)
+async def test_database():
+    """Create the test database before the session and drop it after."""
+    db_name = TEST_DATABASE_URL.rsplit("/", 1)[-1]
+    maintenance_engine = create_async_engine(
+        _maintenance_url, isolation_level="AUTOCOMMIT", echo=False
+    )
+    async with maintenance_engine.connect() as conn:
+        await conn.execute(text(f'DROP DATABASE IF EXISTS "{db_name}"'))
+        await conn.execute(text(f'CREATE DATABASE "{db_name}"'))
+    await maintenance_engine.dispose()
+
+    yield
+
+    async with maintenance_engine.connect() as conn:
+        # Terminate any remaining connections before dropping
+        await conn.execute(
+            text(
+                f"SELECT pg_terminate_backend(pid) FROM pg_stat_activity"
+                f" WHERE datname = '{db_name}' AND pid <> pg_backend_pid()"
+            )
+        )
+        await conn.execute(text(f'DROP DATABASE IF EXISTS "{db_name}"'))
+    await maintenance_engine.dispose()
 
 
 # ---------------------------------------------------------------------------
 # Session-scoped: create / drop tables once per test run
 # ---------------------------------------------------------------------------
 @pytest_asyncio.fixture(scope="session")
-async def test_engine():
+async def test_engine(test_database):
     engine = create_async_engine(TEST_DATABASE_URL, echo=False)
     async with engine.begin() as conn:
-        await conn.run_sync(Base.metadata.drop_all)
         await conn.run_sync(Base.metadata.create_all)
     yield engine
     await engine.dispose()
@@ -80,8 +113,7 @@ async def client(db: AsyncSession):
 # ---------------------------------------------------------------------------
 @pytest_asyncio.fixture
 async def currency(db: AsyncSession) -> Currency:
-    cur = Currency(code="USD", name="US Dollar")
-    db.add(cur)
+    cur = await db.merge(Currency(code="USD", name="US Dollar"))
     await db.flush()
     return cur
 
