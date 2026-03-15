@@ -2,7 +2,7 @@ import { apiFetch } from './client'
 import type { CrisisScore, TrendResponse, VolatilityResponse } from '../types'
 
 export function getCrisisScores(): Promise<CrisisScore[]> {
-  return apiFetch('/analytics/crisis-scores')
+  return apiFetch('/analytics/crisis-scores?limit=200')
 }
 
 export function getCrisisScore(country: string): Promise<CrisisScore> {
