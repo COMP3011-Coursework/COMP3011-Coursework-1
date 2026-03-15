@@ -1,11 +1,12 @@
-from datetime import date, datetime
+from datetime import date as Date
+from datetime import datetime
 from typing import Optional
 
 from pydantic import BaseModel, ConfigDict
 
 
 class PriceBase(BaseModel):
-    date: date
+    date: Date
     countryiso3: str
     admin1: Optional[str] = None
     admin2: Optional[str] = None
@@ -25,7 +26,7 @@ class PriceCreate(PriceBase):
 
 
 class PriceUpdate(BaseModel):
-    date: Optional[date] = None
+    date: Optional[Date] = None
     countryiso3: Optional[str] = None
     admin1: Optional[str] = None
     admin2: Optional[str] = None
