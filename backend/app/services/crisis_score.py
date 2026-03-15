@@ -43,18 +43,21 @@ async def compute_crisis_scores(
 
     # Step 1: compute raw components per country via SQL
     raw_sql = text("""
-        WITH latest_date AS (
-            SELECT MAX(date) AS max_date FROM prices
+        WITH country_latest AS (
+            -- per-country latest date so each country uses its own 12-month window
+            SELECT countryiso3, MAX(date) AS max_date FROM prices GROUP BY countryiso3
         ),
         window_prices AS (
             SELECT
-                countryiso3,
-                commodity_id,
-                usdprice,
-                date
-            FROM prices, latest_date
-            WHERE usdprice IS NOT NULL
-              AND date >= (latest_date.max_date - INTERVAL '12 months')
+                p.countryiso3,
+                p.commodity_id,
+                p.usdprice,
+                p.date,
+                cl.max_date
+            FROM prices p
+            JOIN country_latest cl USING (countryiso3)
+            WHERE p.usdprice IS NOT NULL
+              AND p.date >= (cl.max_date - INTERVAL '12 months')
         ),
         volatility_cte AS (
             SELECT
@@ -85,7 +88,7 @@ async def compute_crisis_scores(
                    / NULLIF(AVG(usdprice), 0)) - 1,
                     0
                 ) AS trend
-            FROM window_prices, latest_date
+            FROM window_prices
             GROUP BY countryiso3
         ),
         breadth_cte AS (
@@ -112,14 +115,14 @@ async def compute_crisis_scores(
             GROUP BY countryiso3
         )
         SELECT
-            v.countryiso3,
+            t.countryiso3,
             COALESCE(v.volatility, 0) AS volatility,
             COALESCE(t.trend, 0)      AS trend,
             COALESCE(b.breadth, 0)    AS breadth
-        FROM volatility_cte v
-        LEFT JOIN trend_cte t USING (countryiso3)
+        FROM trend_cte t
+        LEFT JOIN volatility_cte v USING (countryiso3)
         LEFT JOIN breadth_cte b USING (countryiso3)
-        ORDER BY v.countryiso3
+        ORDER BY t.countryiso3
     """)
 
     result = await db.execute(raw_sql)
