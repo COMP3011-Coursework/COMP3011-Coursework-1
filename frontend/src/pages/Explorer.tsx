@@ -76,7 +76,7 @@ export default function Explorer() {
               onChange={(e) => setCountry(e.target.value)}
               className="border border-gray-300 rounded px-2 py-1.5 text-sm focus:outline-none focus:ring-1 focus:ring-blue-500"
             >
-              <option value="">Select country…</option>
+              <option value="">All</option>
               {countries.map((c) => (
                 <option key={c.countryiso3} value={c.countryiso3}>
                   {c.countryiso3}
@@ -92,7 +92,7 @@ export default function Explorer() {
               onChange={(e) => setCommodityId(e.target.value)}
               className="border border-gray-300 rounded px-2 py-1.5 text-sm focus:outline-none focus:ring-1 focus:ring-blue-500"
             >
-              <option value="">Select commodity…</option>
+              <option value="">All</option>
               {commodities.map((c) => (
                 <option key={c.id} value={c.id}>
                   {c.name}
