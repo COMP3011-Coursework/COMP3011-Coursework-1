@@ -8,6 +8,12 @@ interface Props {
   selectedIso3?: string | null
 }
 
+let geojsonCache: Promise<unknown> | null = null
+function fetchGeoJSON() {
+  if (!geojsonCache) geojsonCache = fetch('/data/world.geojson').then((r) => r.json())
+  return geojsonCache
+}
+
 function crisisColour(score?: number): string {
   if (score === undefined) return '#d1d5db'
   if (score >= 75) return '#dc2626'
@@ -45,8 +51,7 @@ export default function ChoroplethMap({ scores, onCountryClick, selectedIso3 }: 
     const scoreMap = new Map(scores.map((s) => [s.countryiso3, s]))
     const controller = new AbortController()
 
-    fetch('/data/world.geojson', { signal: controller.signal })
-      .then((r) => r.json())
+    fetchGeoJSON()
       .then((geoData) => {
         if (controller.signal.aborted) return
         const map = mapRef.current
@@ -71,17 +76,18 @@ export default function ChoroplethMap({ scores, onCountryClick, selectedIso3 }: 
           onEachFeature: (feature, featureLayer) => {
             const iso3 = (feature?.properties?.['ISO3166-1-Alpha-3'] ?? feature?.properties?.ISO_A3) as string
             if (!iso3 || iso3 === '-99' || iso3 === '-' || iso3.startsWith('-')) return
+            const countryName = (feature?.properties?.name ?? iso3) as string
             const s = scoreMap.get(iso3)
             featureLayersRef.current.set(iso3, featureLayer as L.Path)
             if (s) {
               featureLayer.bindTooltip(
-                `<strong>${iso3}</strong><br/>Score: ${s.crisis_score.toFixed(1)} (${s.severity})`,
+                `<strong>${countryName}</strong> (${iso3})<br/>Score: ${s.crisis_score.toFixed(1)} (${s.severity})`,
                 { sticky: true, className: 'text-xs' },
               )
               featureLayer.on('click', () => onCountryClick(iso3))
             } else {
               featureLayer.bindTooltip(
-                `<strong>${iso3}</strong><br/>No WFP food price data for this country/region`,
+                `<strong>${countryName}</strong> (${iso3})<br/>No WFP food price data for this country/region`,
                 { sticky: true, className: 'text-xs' },
               )
             }
