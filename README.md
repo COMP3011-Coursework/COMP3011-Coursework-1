@@ -4,7 +4,7 @@ A full-stack web application for monitoring global food prices using WFP (World 
 
 ## Features
 
-- **Interactive choropleth map** — Countries coloured by food crisis score
+- **Interactive choropleth map** — Countries coloured by food crisis score (covers ~99 WFP-monitored countries; developed nations appear gray as they are not tracked by WFP)
 - **Price explorer** — Filter and paginate WFP price records by country, commodity, and date
 - **Data entry** — Authenticated CRUD for price records
 - **Crisis scoring** — Composite algorithm (volatility + trend + breadth) ranked across all countries

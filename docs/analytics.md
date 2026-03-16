@@ -86,10 +86,6 @@ Min-max normalisation means the score reflects a country's position **relative t
 | 50–75 | High |
 | 75–100 | Critical |
 
-### Map coverage note
-
-The choropleth map covers only the ~99 countries monitored by WFP. Developed nations (USA, UK, EU, Australia, etc.) are not tracked by WFP and will always appear gray — this reflects the source data, not a gap in the application.
-
 ---
 
 ## MCP tools
