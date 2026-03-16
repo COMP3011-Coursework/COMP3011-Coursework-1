@@ -89,3 +89,48 @@ Min-max normalisation means the score reflects a country's position **relative t
 ### Map coverage note
 
 The choropleth map covers only the ~99 countries monitored by WFP. Developed nations (USA, UK, EU, Australia, etc.) are not tracked by WFP and will always appear gray — this reflects the source data, not a gap in the application.
+
+---
+
+## MCP tools
+
+The MCP server is mounted at `/mcp/sse` (FastMCP over SSE). It exposes five tools that wrap the analytics services for use with LLM clients such as Claude Desktop.
+
+### `get_global_crisis_overview`
+
+No parameters. Returns the top 20 countries ranked by crisis score. Each entry includes `countryiso3`, `crisis_score`, `severity`, and the three component scores (`volatility_score`, `trend_score`, `breadth_score`).
+
+### `get_crisis_summary`
+
+| Parameter | Type | Description |
+| --- | --- | --- |
+| `country` | string | ISO3 country code (e.g. `ETH`) |
+
+Returns the full crisis breakdown for a single country: score, severity, component scores, and the top 5 most price-volatile commodities.
+
+### `get_price_trends`
+
+| Parameter | Type | Description |
+| --- | --- | --- |
+| `country` | string | ISO3 country code (e.g. `KEN`) |
+| `commodity` | string | Commodity name (e.g. `Wheat`) — matched case-insensitively |
+| `months` | int | Months of history to return (default 24) |
+
+Returns a list of `{date, avg_usdprice, count}` dicts covering the requested window.
+
+### `compare_regional_prices`
+
+| Parameter | Type | Description |
+| --- | --- | --- |
+| `commodity` | string | Commodity name (e.g. `Maize`) — matched case-insensitively |
+
+Returns average USD price per country for the commodity, sorted by price descending.
+
+### `get_volatile_commodities`
+
+| Parameter | Type | Description |
+| --- | --- | --- |
+| `country` | string | ISO3 country code (e.g. `SOM`) |
+| `limit` | int | Max results (default 10, max 50) |
+
+Returns commodities ranked by Coefficient of Variation, with `commodity_name`, `cv`, and `avg_usdprice`.
