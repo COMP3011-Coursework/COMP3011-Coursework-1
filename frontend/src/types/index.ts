@@ -89,6 +89,11 @@ export interface Country {
   count: number
 }
 
+export interface Currency {
+  code: string
+  name: string
+}
+
 export interface AuthToken {
   access_token: string
   token_type: string

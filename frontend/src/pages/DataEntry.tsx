@@ -1,9 +1,9 @@
 import { useEffect, useState } from 'react'
 import { login, register } from '../api/auth'
 import { createPrice, deletePrice, fetchPrices, updatePrice } from '../api/prices'
-import { getCommodities, getCountries, getMarkets } from '../api/reference'
+import { getCommodities, getCountries, getCurrencies, getMarkets } from '../api/reference'
 import { useAuth } from '../contexts/AuthContext'
-import type { Commodity, Country, Market, Price } from '../types'
+import type { Commodity, Country, Currency, Market, Price } from '../types'
 
 // ── Auth form ─────────────────────────────────────────────────────────────────
 
@@ -95,6 +95,7 @@ function PriceForm({ onCreated }: { onCreated: () => void }) {
   const { token } = useAuth()
   const [countries, setCountries] = useState<Country[]>([])
   const [commodities, setCommodities] = useState<Commodity[]>([])
+  const [currencies, setCurrencies] = useState<Currency[]>([])
   const [markets, setMarkets] = useState<Market[]>([])
 
   const [country, setCountry] = useState('')
@@ -110,9 +111,10 @@ function PriceForm({ onCreated }: { onCreated: () => void }) {
   const [loading, setLoading] = useState(false)
 
   useEffect(() => {
-    Promise.all([getCountries(), getCommodities()]).then(([c, comms]) => {
+    Promise.all([getCountries(), getCommodities(), getCurrencies()]).then(([c, comms, currs]) => {
       setCountries(c)
       setCommodities(comms)
+      setCurrencies(currs)
     })
   }, [])
 
@@ -226,14 +228,17 @@ function PriceForm({ onCreated }: { onCreated: () => void }) {
 
         <div>
           <label className="block text-xs text-gray-500 mb-1">Currency *</label>
-          <input
+          <select
             value={currency}
             onChange={(e) => setCurrency(e.target.value)}
-            placeholder="USD"
             required
-            maxLength={3}
-            className="border border-gray-300 rounded px-2 py-1.5 text-sm w-20 focus:outline-none focus:ring-1 focus:ring-blue-500"
-          />
+            className="border border-gray-300 rounded px-2 py-1.5 text-sm focus:outline-none focus:ring-1 focus:ring-blue-500"
+          >
+            <option value="">Select…</option>
+            {currencies.map((c) => (
+              <option key={c.code} value={c.code}>{c.code} — {c.name}</option>
+            ))}
+          </select>
         </div>
 
         <div>
@@ -315,6 +320,7 @@ function EntriesTable({
   entries,
   countries,
   commodities,
+  currencies,
   allMarkets,
   commodityMap,
   marketMap,
@@ -328,6 +334,7 @@ function EntriesTable({
   entries: Price[]
   countries: Country[]
   commodities: Commodity[]
+  currencies: Currency[]
   allMarkets: Market[]
   commodityMap: Map<number, string>
   marketMap: Map<number, string>
@@ -453,7 +460,12 @@ function EntriesTable({
                             </select>
                           </td>
                           <td className="px-2 py-1">
-                            <input value={draft.currency_code} onChange={(e) => setDraft({ ...draft, currency_code: e.target.value })} maxLength={3} className={ci + ' w-14'} />
+                            <select value={draft.currency_code} onChange={(e) => setDraft({ ...draft, currency_code: e.target.value })} className={ci}>
+                              <option value="">—</option>
+                              {currencies.map((c) => (
+                                <option key={c.code} value={c.code}>{c.code}</option>
+                              ))}
+                            </select>
                           </td>
                           <td className="px-2 py-1 text-right">
                             <input type="number" value={draft.price} onChange={(e) => setDraft({ ...draft, price: e.target.value })} min="0" step="any" className={ci + ' w-24 text-right'} />
@@ -564,6 +576,7 @@ export default function DataEntry() {
   // Reference data
   const [countries, setCountries] = useState<Country[]>([])
   const [commodities, setCommodities] = useState<Commodity[]>([])
+  const [currencies, setCurrencies] = useState<Currency[]>([])
   const [allMarkets, setAllMarkets] = useState<Market[]>([])
   const [commodityMap, setCommodityMap] = useState<Map<number, string>>(new Map())
   const [marketMap, setMarketMap] = useState<Map<number, string>>(new Map())
@@ -575,9 +588,10 @@ export default function DataEntry() {
   const [filterDateTo, setFilterDateTo] = useState('')
 
   useEffect(() => {
-    Promise.all([getCountries(), getCommodities(), getMarkets()]).then(([ctrs, comms, mkts]) => {
+    Promise.all([getCountries(), getCommodities(), getCurrencies(), getMarkets()]).then(([ctrs, comms, currs, mkts]) => {
       setCountries(ctrs)
       setCommodities(comms)
+      setCurrencies(currs)
       setAllMarkets(mkts)
       setCommodityMap(new Map(comms.map((c) => [c.id, c.name])))
       setMarketMap(new Map(mkts.map((m) => [m.id, m.name])))
@@ -718,6 +732,7 @@ export default function DataEntry() {
         entries={entries}
         countries={countries}
         commodities={commodities}
+        currencies={currencies}
         allMarkets={allMarkets}
         commodityMap={commodityMap}
         marketMap={marketMap}

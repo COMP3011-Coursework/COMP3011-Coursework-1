@@ -6,9 +6,10 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.database import get_db
 from app.models.commodity import Commodity
+from app.models.currency import Currency
 from app.models.market import Market
 from app.models.price import Price
-from app.schemas.reference import CommodityResponse, CountryResponse, MarketResponse
+from app.schemas.reference import CommodityResponse, CountryResponse, CurrencyResponse, MarketResponse
 
 router = APIRouter(tags=["reference"])
 
@@ -32,6 +33,14 @@ async def list_commodities(
     db: AsyncSession = Depends(get_db),
 ) -> list[CommodityResponse]:
     result = await db.execute(select(Commodity).order_by(Commodity.name))
+    return list(result.scalars().all())
+
+
+@router.get("/currencies", response_model=list[CurrencyResponse])
+async def list_currencies(
+    db: AsyncSession = Depends(get_db),
+) -> list[CurrencyResponse]:
+    result = await db.execute(select(Currency).order_by(Currency.code))
     return list(result.scalars().all())
 
 
