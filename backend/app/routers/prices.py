@@ -7,11 +7,21 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.auth.dependencies import get_current_active_user
 from app.database import get_db
+from app.models.currency import Currency
 from app.models.price import Price
 from app.models.user import User
 from app.schemas.price import PriceCreate, PriceListResponse, PriceResponse, PriceUpdate
 
 router = APIRouter(prefix="/prices", tags=["prices"])
+
+
+async def _validate_currency(code: str, db: AsyncSession) -> None:
+    result = await db.execute(select(Currency).where(Currency.code == code))
+    if result.scalars().first() is None:
+        raise HTTPException(
+            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+            detail=f"Unknown currency code: {code!r}",
+        )
 
 
 @router.post("", response_model=PriceResponse, status_code=status.HTTP_201_CREATED)
@@ -20,6 +30,7 @@ async def create_price(
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(get_current_active_user),
 ) -> PriceResponse:
+    await _validate_currency(price_in.currency_code, db)
     price = Price(**price_in.model_dump())
     db.add(price)
     await db.flush()
@@ -91,6 +102,8 @@ async def update_price(
     if price is None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Price not found")
     update_data = price_in.model_dump(exclude_none=True)
+    if "currency_code" in update_data:
+        await _validate_currency(update_data["currency_code"], db)
     for field, value in update_data.items():
         setattr(price, field, value)
     await db.flush()
