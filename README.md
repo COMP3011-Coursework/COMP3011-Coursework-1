@@ -23,6 +23,18 @@ A full-stack web application for monitoring global food prices using WFP (World 
 | Charts | Chart.js + react-chartjs-2 |
 | Deployment | Docker Compose |
 
+## API reference
+
+Interactive docs at `/docs` (Swagger UI) and `/redoc`. Full endpoint reference: [docs/api-reference.md](docs/api-reference.md).
+
+## Advanced features
+
+Beyond basic CRUD, the application provides analytics endpoints and an MCP server for LLM integration. See [docs/advanced-features.md](docs/advanced-features.md) for full details.
+
+**Analytics** — five endpoints covering price trends, commodity volatility, regional price comparison, market summaries, and composite crisis scores.
+
+**MCP server** — mounted at `/mcp/sse`, exposing five tools (`get_global_crisis_overview`, `get_crisis_summary`, `get_price_trends`, `compare_regional_prices`, `get_volatile_commodities`) for use with Claude Desktop or any MCP-compatible client.
+
 ## Prerequisites
 
 | Tool | Version | Notes |
@@ -55,6 +67,17 @@ pip install -r backend/requirements.txt
 ```bash
 npm install --prefix frontend
 ```
+
+## Environment variables
+
+Copy `.env.example` and fill in values:
+
+| Variable | Description |
+| --- | --- |
+| `DATABASE_URL` | PostgreSQL connection string |
+| `SECRET_KEY` | JWT signing key (generate with `openssl rand -hex 32`) |
+| `CORS_ORIGINS` | Comma-separated allowed origins |
+| `POSTGRES_DB` / `POSTGRES_USER` / `POSTGRES_PASSWORD` | Docker Compose DB config |
 
 ## Development
 
@@ -89,6 +112,19 @@ Runs `npm run dev` inside `frontend/`. Reads `VITE_API_URL` from `.env` in the p
 
 - App: <http://localhost:5173>
 
+### Tests
+
+Requires a running PostgreSQL instance (a separate test database is created automatically).
+
+```bash
+conda activate COMP3011-Coursework-1
+cd backend
+python -m pytest
+python -m pytest --cov=app --cov-report=term-missing   # with coverage
+```
+
+Target: 100% coverage.
+
 ## Production
 
 ```bash
@@ -103,39 +139,3 @@ The production compose override removes the source-code bind mount, runs uvicorn
 | Frontend (nginx) | <http://localhost:80> |
 | API | <http://localhost:8000/api/v1/> |
 | API docs | <http://localhost:8000/docs> |
-
-## Environment variables
-
-Copy `.env.example` and fill in values:
-
-| Variable | Description |
-| --- | --- |
-| `DATABASE_URL` | PostgreSQL connection string |
-| `SECRET_KEY` | JWT signing key (generate with `openssl rand -hex 32`) |
-| `CORS_ORIGINS` | Comma-separated allowed origins |
-| `POSTGRES_DB` / `POSTGRES_USER` / `POSTGRES_PASSWORD` | Docker Compose DB config |
-
-## API reference
-
-Interactive docs at `/docs` (Swagger UI) and `/redoc`. Full endpoint reference: [docs/api-reference.md](docs/api-reference.md).
-
-## Advanced features
-
-Beyond basic CRUD, the application provides analytics endpoints and an MCP server for LLM integration. See [docs/advanced-features.md](docs/advanced-features.md) for full details.
-
-**Analytics** — five endpoints covering price trends, commodity volatility, regional price comparison, market summaries, and composite crisis scores.
-
-**MCP server** — mounted at `/mcp/sse`, exposing five tools (`get_global_crisis_overview`, `get_crisis_summary`, `get_price_trends`, `compare_regional_prices`, `get_volatile_commodities`) for use with Claude Desktop or any MCP-compatible client.
-
-## Tests
-
-Requires a running PostgreSQL instance (a separate test database is created automatically).
-
-```bash
-conda activate COMP3011-Coursework-1
-cd backend
-python -m pytest
-python -m pytest --cov=app --cov-report=term-missing   # with coverage
-```
-
-Target: 100% coverage.
