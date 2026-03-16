@@ -131,7 +131,7 @@ Copy `.env.example` and fill in values:
 
 ## API reference
 
-Interactive docs at `/docs` (Swagger UI) and `/redoc`. Full endpoint reference: [docs/api-reference.md](docs/api-reference.md).
+Interactive docs at `/docs` (Swagger UI) and `/redoc`. Full endpoint reference: [docs/api-reference.md](docs/api-reference.md). Analytics features and crisis score algorithm: [docs/analytics.md](docs/analytics.md).
 
 ---
 
