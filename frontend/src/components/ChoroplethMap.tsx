@@ -33,7 +33,12 @@ export default function ChoroplethMap({ scores, onCountryClick, selectedIso3 }: 
   useEffect(() => {
     if (!containerRef.current || mapRef.current) return
 
-    const map = L.map(containerRef.current, { zoomControl: true }).setView([20, 10], 2)
+    const map = L.map(containerRef.current, {
+      zoomControl: true,
+      maxBounds: [[-90, -180], [90, 180]],
+      maxBoundsViscosity: 1.0,
+      minZoom: 2,
+    }).setView([20, 10], 2)
     L.tileLayer('https://{s}.basemaps.cartocdn.com/light_nolabels/{z}/{x}/{y}{r}.png', {
       attribution: '© OpenStreetMap contributors © CARTO',
       maxZoom: 19,
