@@ -1,10 +1,10 @@
-# Analytics
+# Advanced Features
 
-Five analytics features are available under `/api/v1/analytics/`. All queries run against the `prices` table, which is indexed on `(countryiso3, date)`, `(commodity_id, date)`, and `market_id` for performance.
+## Analytics
 
----
+Five analytics endpoints are available under `/api/v1/analytics/`. All queries run against the `prices` table, which is indexed on `(countryiso3, date)`, `(commodity_id, date)`, and `market_id` for performance.
 
-## 1. Price trends
+### Price trends
 
 **Endpoint:** `GET /api/v1/analytics/trends`
 
@@ -12,9 +12,7 @@ Five analytics features are available under `/api/v1/analytics/`. All queries ru
 
 Groups all prices for a country/commodity pair by calendar month (`YYYY-MM`) and returns the average USD price and observation count per month. Null prices are excluded. Useful for visualising how a commodity's price has evolved over time in a specific country.
 
----
-
-## 2. Commodity volatility
+### Commodity volatility
 
 **Endpoint:** `GET /api/v1/analytics/volatility`
 
@@ -26,11 +24,9 @@ Ranks commodities within a country by price volatility using the **Coefficient o
 CV = stddev(price) / avg(price)
 ```
 
-CV is scale-independent, making commodities with very different price levels directly comparable. Commodities with fewer than the minimum required observations are excluded. Results are sorted descending by CV.
+CV is scale-independent, making commodities with very different price levels directly comparable. Commodities with insufficient observations are excluded. Results are sorted descending by CV.
 
----
-
-## 3. Regional comparison
+### Regional comparison
 
 **Endpoint:** `GET /api/v1/analytics/regional-comparison`
 
@@ -38,9 +34,7 @@ CV is scale-independent, making commodities with very different price levels dir
 
 Returns the average USD price of a single commodity for every country that has recorded it, sorted by average price descending. Useful for identifying which regions face the highest food costs for a given commodity.
 
----
-
-## 4. Market summary
+### Market summary
 
 **Endpoint:** `GET /api/v1/analytics/markets/{market_id}/summary`
 
@@ -50,9 +44,7 @@ Provides a snapshot of a single market:
 - Count of distinct commodities tracked at the market
 - Latest recorded price per commodity, resolved by taking the row with `MAX(date)` per commodity
 
----
-
-## 5. Crisis scores
+### Crisis scores
 
 **Endpoints:** `GET /api/v1/analytics/crisis-scores`, `GET /api/v1/analytics/crisis-scores/{country}`
 
@@ -64,7 +56,7 @@ Produces a composite food-crisis indicator (0–100) for every country in the da
 | Trend | 35% | Ratio of the latest 3-month average to the 12-month average, minus 1 — positive values indicate rising prices |
 | Breadth | 25% | Fraction of commodities whose most recent price exceeds their 12-month trailing mean |
 
-### Formula
+**Formula:**
 
 ```text
 volatility = avg(stddev / mean) per commodity over trailing 12 months
@@ -77,7 +69,7 @@ crisis_score = (0.40 × volatility + 0.35 × trend + 0.25 × breadth) × 100
 
 Min-max normalisation means the score reflects a country's position **relative to others** in the current dataset, not an absolute threshold.
 
-### Severity bands
+**Severity bands:**
 
 | Score | Severity |
 | --- | --- |
@@ -86,9 +78,7 @@ Min-max normalisation means the score reflects a country's position **relative t
 | 50–75 | High |
 | 75–100 | Critical |
 
----
-
-## MCP tools
+## MCP server
 
 The MCP server is mounted at `/mcp/sse` (FastMCP over SSE). It exposes five tools that wrap the analytics services for use with LLM clients such as Claude Desktop.
 

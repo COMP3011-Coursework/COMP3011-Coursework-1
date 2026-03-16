@@ -44,3 +44,5 @@ A default admin account is created automatically on first boot:
 | `GET /api/v1/countries` | Countries with price data |
 | `GET /api/v1/commodities` | All commodities |
 | `GET /api/v1/markets?country=` | Markets (optionally filtered by country) |
+
+See [advanced-features.md](advanced-features.md) for a full description of the analytics endpoints and MCP tools.

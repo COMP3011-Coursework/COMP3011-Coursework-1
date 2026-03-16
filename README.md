@@ -117,28 +117,15 @@ Copy `.env.example` and fill in values:
 
 ## API reference
 
-Interactive docs at `/docs` (Swagger UI) and `/redoc`.
+Interactive docs at `/docs` (Swagger UI) and `/redoc`. Full endpoint reference: [docs/api-reference.md](docs/api-reference.md).
 
-- Full endpoint reference: [docs/api-reference.md](docs/api-reference.md)
-- Analytics features and crisis score algorithm: [docs/analytics.md](docs/analytics.md)
+## Advanced features
 
-## MCP server
+Beyond basic CRUD, the application provides analytics endpoints and an MCP server for LLM integration. See [docs/advanced-features.md](docs/advanced-features.md) for full details.
 
-The FastMCP server is mounted at `/mcp/sse`. Add to Claude Desktop config:
+**Analytics** — five endpoints covering price trends, commodity volatility, regional price comparison, market summaries, and composite crisis scores.
 
-```json
-{
-  "mcpServers": {
-    "food-price-monitor": {
-      "url": "http://localhost:8000/mcp/sse"
-    }
-  }
-}
-```
-
-Available tools: `get_global_crisis_overview`, `get_crisis_summary`, `get_price_trends`, `compare_regional_prices`, `get_volatile_commodities`.
-
-See [docs/analytics.md](docs/analytics.md) for full tool descriptions.
+**MCP server** — mounted at `/mcp/sse`, exposing five tools (`get_global_crisis_overview`, `get_crisis_summary`, `get_price_trends`, `compare_regional_prices`, `get_volatile_commodities`) for use with Claude Desktop or any MCP-compatible client.
 
 ## Tests
 
