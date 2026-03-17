@@ -4,6 +4,7 @@ import { createPrice, deletePrice, fetchPrices, updatePrice } from '../api/price
 import { getCommodities, getCountries, getCurrencies, getMarkets } from '../api/reference'
 import { useAuth } from '../contexts/AuthContext'
 import type { Commodity, Country, Currency, Market, Price } from '../types'
+import { countryName } from '../utils/countryName'
 
 // ── Auth form ─────────────────────────────────────────────────────────────────
 
@@ -185,7 +186,7 @@ function PriceForm({ onCreated }: { onCreated: () => void }) {
             <option value="">Select…</option>
             {countries.map((c) => (
               <option key={c.countryiso3} value={c.countryiso3}>
-                {c.countryiso3}
+                {countryName(c.countryiso3)} ({c.countryiso3})
               </option>
             ))}
           </select>
@@ -430,7 +431,7 @@ function EntriesTable({
                             >
                               <option value="">—</option>
                               {countries.map((c) => (
-                                <option key={c.countryiso3} value={c.countryiso3}>{c.countryiso3}</option>
+                                <option key={c.countryiso3} value={c.countryiso3}>{countryName(c.countryiso3)} ({c.countryiso3})</option>
                               ))}
                             </select>
                           </td>
@@ -671,7 +672,7 @@ export default function DataEntry() {
             >
               <option value="">All</option>
               {countries.map((c) => (
-                <option key={c.countryiso3} value={c.countryiso3}>{c.countryiso3}</option>
+                <option key={c.countryiso3} value={c.countryiso3}>{countryName(c.countryiso3)} ({c.countryiso3})</option>
               ))}
             </select>
           </div>

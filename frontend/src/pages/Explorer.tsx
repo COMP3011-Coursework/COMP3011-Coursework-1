@@ -4,6 +4,7 @@ import { fetchPrices } from '../api/prices'
 import { getCommodities, getCountries } from '../api/reference'
 import PriceTrendChart from '../components/PriceTrendChart'
 import type { Commodity, Country, Price, TrendPoint } from '../types'
+import { countryName } from '../utils/countryName'
 
 export default function Explorer() {
   const [countries, setCountries] = useState<Country[]>([])
@@ -79,7 +80,7 @@ export default function Explorer() {
               <option value="">All</option>
               {countries.map((c) => (
                 <option key={c.countryiso3} value={c.countryiso3}>
-                  {c.countryiso3}
+                  {countryName(c.countryiso3)} ({c.countryiso3})
                 </option>
               ))}
             </select>
