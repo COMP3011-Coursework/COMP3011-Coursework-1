@@ -7,7 +7,9 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.auth.dependencies import get_current_active_user
 from app.database import get_db
+from app.models.commodity import Commodity
 from app.models.currency import Currency
+from app.models.market import Market
 from app.models.price import Price
 from app.models.user import User
 from app.schemas.price import PriceCreate, PriceListResponse, PriceResponse, PriceUpdate
@@ -20,10 +22,19 @@ _404 = {"description": "Price not found"}
 async def _validate_currency(code: str, db: AsyncSession) -> None:
     result = await db.execute(select(Currency).where(Currency.code == code))
     if result.scalars().first() is None:
-        raise HTTPException(
-            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
-            detail=f"Unknown currency code: {code!r}",
-        )
+        raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_ENTITY, detail=f"Unknown currency code: {code!r}")
+
+
+async def _validate_market(market_id: int, db: AsyncSession) -> None:
+    result = await db.execute(select(Market).where(Market.id == market_id))
+    if result.scalars().first() is None:
+        raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_ENTITY, detail=f"Unknown market_id: {market_id}")
+
+
+async def _validate_commodity(commodity_id: int, db: AsyncSession) -> None:
+    result = await db.execute(select(Commodity).where(Commodity.id == commodity_id))
+    if result.scalars().first() is None:
+        raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_ENTITY, detail=f"Unknown commodity_id: {commodity_id}")
 
 
 @router.post(
@@ -41,6 +52,8 @@ async def create_price(
     current_user: User = Depends(get_current_active_user),
 ) -> PriceResponse:
     await _validate_currency(price_in.currency_code, db)
+    await _validate_market(price_in.market_id, db)
+    await _validate_commodity(price_in.commodity_id, db)
     price = Price(**price_in.model_dump())
     db.add(price)
     await db.flush()
@@ -137,6 +150,10 @@ async def update_price(
     update_data = price_in.model_dump(exclude_none=True)
     if "currency_code" in update_data:
         await _validate_currency(update_data["currency_code"], db)
+    if "market_id" in update_data:
+        await _validate_market(update_data["market_id"], db)
+    if "commodity_id" in update_data:
+        await _validate_commodity(update_data["commodity_id"], db)
     for field, value in update_data.items():
         setattr(price, field, value)
     await db.flush()
