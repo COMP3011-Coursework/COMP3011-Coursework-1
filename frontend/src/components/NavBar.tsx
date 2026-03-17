@@ -2,7 +2,7 @@ import { Link, useLocation } from 'react-router-dom'
 import { useAuth } from '../contexts/AuthContext'
 
 const links = [
-  { to: '/', label: 'Dashboard' },
+  { to: '/', label: 'World Map' },
   { to: '/explorer', label: 'Explorer' },
   { to: '/data-entry', label: 'Data Entry' },
 ]
