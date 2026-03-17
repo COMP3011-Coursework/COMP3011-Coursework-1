@@ -12,6 +12,8 @@ A full-stack web application for monitoring global food prices using WFP (World 
 
 > Hosted on Render's free plan — initial load may be slow due to cold starts and resource limits. Runs well locally.
 
+Default admin credentials: username `admin`, password `admin123`.
+
 ## Features
 
 - **Interactive choropleth map** — Countries coloured by food crisis score (covers ~99 WFP-monitored countries; developed nations appear gray as they are not tracked by WFP)
