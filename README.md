@@ -25,7 +25,7 @@ A full-stack web application for monitoring global food prices using WFP (World 
 
 ## API reference
 
-Interactive docs at `/docs` (Swagger UI) and `/redoc`. Full endpoint reference: [docs/api-reference.md](docs/api-reference.md).
+Interactive docs (`/docs` Swagger UI, `/redoc`, `/openapi.json`) are served directly from the backend. Endpoint index: [docs/api-index.md](docs/api-index.md). Full reference (PDF): [docs/api-reference.pdf](docs/api-reference.pdf).
 
 ## Advanced features
 

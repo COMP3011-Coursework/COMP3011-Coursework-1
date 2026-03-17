@@ -1,6 +1,14 @@
 # API Reference
 
-Interactive docs at `/docs` (Swagger UI) and `/redoc`.
+The following interactive docs are served directly from the backend:
+
+| Path | Description |
+| --- | --- |
+| `/docs` | Swagger UI — interactive explorer |
+| `/redoc` | ReDoc — readable reference |
+| `/openapi.json` | Raw OpenAPI 3 schema |
+
+Full reference (PDF): [api-reference.pdf](api-reference.pdf).
 
 ## Authentication
 
