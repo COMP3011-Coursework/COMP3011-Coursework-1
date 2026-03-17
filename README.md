@@ -2,6 +2,16 @@
 
 A full-stack web application for monitoring global food prices using WFP (World Food Programme) data. Built for COMP3011 Web Services and Web Data, University of Leeds.
 
+## Live demo
+
+| Service | URL |
+| --- | --- |
+| Frontend | [comp3011-coursework-1-frontend.onrender.com](https://comp3011-coursework-1-frontend.onrender.com/) |
+| Backend — API docs (Swagger) | [comp3011-coursework-1-backend.onrender.com/docs](https://comp3011-coursework-1-backend.onrender.com/docs) |
+| Backend — API docs (ReDoc) | [comp3011-coursework-1-backend.onrender.com/redoc](https://comp3011-coursework-1-backend.onrender.com/redoc) |
+
+> Hosted on Render's free plan — initial load may be slow due to cold starts and resource limits. Runs well locally.
+
 ## Features
 
 - **Interactive choropleth map** — Countries coloured by food crisis score (covers ~99 WFP-monitored countries; developed nations appear gray as they are not tracked by WFP)
