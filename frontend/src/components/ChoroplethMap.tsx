@@ -8,7 +8,7 @@ interface Props {
   selectedIso3?: string | null
 }
 
-let geojsonCache: Promise<unknown> | null = null
+let geojsonCache: Promise<GeoJSON.GeoJsonObject> | null = null
 function fetchGeoJSON() {
   if (!geojsonCache) geojsonCache = fetch('/data/world.geojson').then((r) => r.json())
   return geojsonCache
