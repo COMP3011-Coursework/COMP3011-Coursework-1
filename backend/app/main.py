@@ -33,10 +33,6 @@ async def _auto_seed() -> None:
 
     data_dir = Path(os.environ.get("DATA_DIR", "./data"))
 
-    logger.info("Checking for missing data files…")
-    loop = asyncio.get_running_loop()
-    await loop.run_in_executor(None, download_missing, data_dir)
-
     async with AsyncSessionLocal() as session:
         result = await session.execute(text("SELECT COUNT(*) FROM commodities"))
         count = result.scalar()
@@ -44,7 +40,12 @@ async def _auto_seed() -> None:
     if count and count > 0:
         return  # already seeded
 
-    logger.info("Database is empty — seeding from %s", data_dir)
+    logger.info("Database is empty — downloading data files and seeding from %s", data_dir)
+    loop = asyncio.get_running_loop()
+    try:
+        await loop.run_in_executor(None, download_missing, data_dir)
+    except Exception as exc:
+        logger.warning("Could not download data files: %s — proceeding with any local files", exc)
     async with AsyncSessionLocal() as session:
         await seed_commodities(session, data_dir)
         await seed_currencies(session, data_dir)

@@ -39,7 +39,10 @@ def _fetch_download_urls() -> dict[str, str]:
     """Return {filename: download_url} by reading the HDX dataset metadata."""
     print("  Fetching dataset metadata from HDX…")
     with urllib.request.urlopen(METADATA_URL, timeout=30) as resp:
-        metadata = json.loads(resp.read())
+        body = resp.read()
+    if not body:
+        raise ValueError("HDX metadata endpoint returned an empty response")
+    metadata = json.loads(body)
 
     reference_files = {
         "wfp_commodities_global.csv",
