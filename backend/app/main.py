@@ -18,6 +18,7 @@ from app.routers import prices as prices_router_module
 from app.routers import reference as reference_router_module
 
 logger = logging.getLogger(__name__)
+_app_logger = logging.getLogger("app")
 
 
 async def _auto_seed() -> None:
@@ -72,6 +73,13 @@ async def _auto_seed() -> None:
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
+    # Route all app.* loggers through uvicorn's handler
+    _app_logger.setLevel(logging.INFO)
+    for _h in logging.getLogger("uvicorn").handlers:
+        if _h not in _app_logger.handlers:
+            _app_logger.addHandler(_h)
+    _app_logger.propagate = False
+
     async with engine.begin() as conn:
         await conn.run_sync(Base.metadata.create_all)
     await _auto_seed()

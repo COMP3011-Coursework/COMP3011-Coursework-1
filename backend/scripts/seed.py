@@ -14,9 +14,12 @@ import asyncio
 import csv
 import glob
 import json
+import logging
 import sys
 import urllib.request
 from pathlib import Path
+
+logger = logging.getLogger("app.seed")
 
 import bcrypt
 from sqlalchemy import text
@@ -37,7 +40,7 @@ BATCH_SIZE = 1000
 
 def _fetch_download_urls() -> dict[str, str]:
     """Return {filename: download_url} by reading the HDX dataset metadata."""
-    print("  Fetching dataset metadata from HDX…")
+    logger.info("Fetching dataset metadata from HDX…")
     with urllib.request.urlopen(METADATA_URL, timeout=30) as resp:
         body = resp.read()
     if not body:
@@ -64,7 +67,7 @@ def _fetch_download_urls() -> dict[str, str]:
             price_files[filename] = url
 
     urls = {**refs, **price_files}
-    print(f"  Found {len(refs)} reference file(s) + {len(price_files)} price file(s)")
+    logger.info("Found %d reference file(s) + %d price file(s)", len(refs), len(price_files))
     return urls
 
 
@@ -76,12 +79,12 @@ def download_missing(data_dir: Path) -> None:
     for filename, url in sorted(urls.items()):
         dest = data_dir / filename
         if dest.exists():
-            print(f"  [SKIP] {filename} already exists")
+            logger.info("[SKIP] %s already exists", filename)
             continue
-        print(f"  Downloading {filename}…", end=" ", flush=True)
+        logger.info("Downloading %s…", filename)
         urllib.request.urlretrieve(url, dest)
         size_kb = dest.stat().st_size // 1024
-        print(f"{size_kb} KB")
+        logger.info("  %s: %d KB", filename, size_kb)
 
 
 # ---------------------------------------------------------------------------
@@ -91,7 +94,7 @@ def download_missing(data_dir: Path) -> None:
 async def seed_commodities(session: AsyncSession, data_dir: Path) -> int:
     csv_path = data_dir / "wfp_commodities_global.csv"
     if not csv_path.exists():
-        print(f"  [SKIP] {csv_path.name} not found")
+        logger.warning("[SKIP] %s not found", csv_path.name)
         return 0
 
     batch: list[dict] = []
@@ -115,7 +118,7 @@ async def seed_commodities(session: AsyncSession, data_dir: Path) -> int:
 async def seed_currencies(session: AsyncSession, data_dir: Path) -> int:
     csv_path = data_dir / "wfp_currencies_global.csv"
     if not csv_path.exists():
-        print(f"  [SKIP] {csv_path.name} not found")
+        logger.warning("[SKIP] %s not found", csv_path.name)
         return 0
 
     batch: list[dict] = []
@@ -138,7 +141,7 @@ async def seed_currencies(session: AsyncSession, data_dir: Path) -> int:
 async def seed_markets(session: AsyncSession, data_dir: Path) -> int:
     csv_path = data_dir / "wfp_markets_global.csv"
     if not csv_path.exists():
-        print(f"  [SKIP] {csv_path.name} not found")
+        logger.warning("[SKIP] %s not found", csv_path.name)
         return 0
 
     batch: list[dict] = []
@@ -172,9 +175,12 @@ async def seed_markets(session: AsyncSession, data_dir: Path) -> int:
 
 
 async def seed_prices(session: AsyncSession, data_dir: Path) -> int:
-    csv_files = sorted(glob.glob(str(data_dir / "wfp_food_prices_*.csv")))
+    csv_files = sorted(
+        f for f in glob.glob(str(data_dir / "wfp_food_prices_*.csv"))
+        if (m := __import__('re').search(r'_(\d{4})\.csv$', f)) and int(m.group(1)) <= 2015
+    )
     if not csv_files:
-        print(f"  [SKIP] No wfp_food_prices_*.csv files found in {data_dir}")
+        logger.warning("[SKIP] No wfp_food_prices_*.csv files found in %s", data_dir)
         return 0
 
     total_inserted = 0
@@ -227,7 +233,7 @@ async def seed_prices(session: AsyncSession, data_dir: Path) -> int:
             await session.commit()
             file_inserted += len(batch)
 
-        print(f"  {Path(csv_path).name}: {file_inserted} rows inserted")
+        logger.info("%s: %d rows inserted", Path(csv_path).name, file_inserted)
         total_inserted += file_inserted
 
     return total_inserted
@@ -258,40 +264,39 @@ async def seed_admin_user(session: AsyncSession) -> None:
 # ---------------------------------------------------------------------------
 
 async def main(data_dir: Path) -> None:
-    print(f"Connecting to: {settings.DATABASE_URL}")
-    print(f"Data directory: {data_dir}")
-    print()
+    logging.basicConfig(level=logging.INFO, format="%(levelname)s: %(message)s")
+    logger.info("Connecting to: %s", settings.DATABASE_URL)
+    logger.info("Data directory: %s", data_dir)
 
-    print("Checking for missing data files…")
+    logger.info("Checking for missing data files…")
     download_missing(data_dir)
-    print()
 
     engine = create_async_engine(settings.DATABASE_URL, echo=False)
     SessionLocal = async_sessionmaker(bind=engine, class_=AsyncSession, expire_on_commit=False)
 
     async with SessionLocal() as session:
-        print("Seeding commodities…")
+        logger.info("Seeding commodities…")
         n = await seed_commodities(session, data_dir)
-        print(f"  -> {n} rows")
+        logger.info("  -> %d rows", n)
 
-        print("Seeding currencies…")
+        logger.info("Seeding currencies…")
         n = await seed_currencies(session, data_dir)
-        print(f"  -> {n} rows")
+        logger.info("  -> %d rows", n)
 
-        print("Seeding markets…")
+        logger.info("Seeding markets…")
         n = await seed_markets(session, data_dir)
-        print(f"  -> {n} rows")
+        logger.info("  -> %d rows", n)
 
-        print("Seeding prices (this may take a while)…")
+        logger.info("Seeding prices (this may take a while)…")
         n = await seed_prices(session, data_dir)
-        print(f"  -> {n} total rows")
+        logger.info("  -> %d total rows", n)
 
-        print("Creating admin user…")
+        logger.info("Creating admin user…")
         await seed_admin_user(session)
-        print("  -> admin / admin123")
+        logger.info("  -> admin / admin123")
 
     await engine.dispose()
-    print("\nSeeding complete.")
+    logger.info("Seeding complete.")
 
 
 if __name__ == "__main__":
