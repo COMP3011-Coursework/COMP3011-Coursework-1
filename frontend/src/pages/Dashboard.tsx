@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { getCrisisScores } from '../api/analytics'
 import ChoroplethMap from '../components/ChoroplethMap'
 import CountryDetailPanel from '../components/CountryDetailPanel'
+import Spinner from '../components/Spinner'
 import { useApi } from '../hooks/useApi'
 
 export default function Dashboard() {
@@ -29,13 +30,17 @@ export default function Dashboard() {
             {label}
           </span>
         ))}
-        {loading && <span className="ml-auto text-gray-400">Loading scores…</span>}
         {error && <span className="ml-auto text-red-500">Failed to load scores</span>}
       </div>
 
       <div className="flex flex-1 overflow-hidden">
         {/* Map */}
         <div className="flex-1 relative">
+          {loading && (
+            <div className="absolute inset-0 z-[1000] flex items-center justify-center bg-white/60">
+              <Spinner className="w-10 h-10" />
+            </div>
+          )}
           <ChoroplethMap
             scores={scores ?? []}
             onCountryClick={setSelectedIso3}

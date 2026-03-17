@@ -3,6 +3,7 @@ import { getCrisisScore, getTrends, getVolatility } from '../api/analytics'
 import { ApiError } from '../api/client'
 import type { CrisisScore, TrendPoint, VolatilityItem } from '../types'
 import PriceTrendChart from './PriceTrendChart'
+import Spinner from './Spinner'
 import VolatilityList from './VolatilityList'
 
 interface Props {
@@ -100,8 +101,8 @@ export default function CountryDetailPanel({ iso3, onClose }: Props) {
 
       <div className="flex-1 overflow-y-auto p-4 space-y-4">
         {loading && (
-          <div className="flex items-center justify-center h-32 text-gray-400 text-sm">
-            Loading…
+          <div className="flex items-center justify-center h-32">
+            <Spinner />
           </div>
         )}
         {error && <p className="text-red-500 text-sm">{error}</p>}

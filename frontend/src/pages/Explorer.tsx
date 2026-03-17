@@ -3,6 +3,7 @@ import { getTrends } from '../api/analytics'
 import { fetchPrices } from '../api/prices'
 import { getCommodities, getCountries } from '../api/reference'
 import PriceTrendChart from '../components/PriceTrendChart'
+import Spinner from '../components/Spinner'
 import type { Commodity, Country, Price, TrendPoint } from '../types'
 import { countryName } from '../utils/countryName'
 
@@ -203,6 +204,12 @@ export default function Explorer() {
               </tbody>
             </table>
           </div>
+        </div>
+      )}
+
+      {loading && (
+        <div className="flex items-center justify-center py-16">
+          <Spinner />
         </div>
       )}
 

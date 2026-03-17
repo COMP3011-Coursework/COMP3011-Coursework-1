@@ -3,6 +3,7 @@ import { login, register } from '../api/auth'
 import { createPrice, deletePrice, fetchPrices, updatePrice } from '../api/prices'
 import { getCommodities, getCountries, getCurrencies, getMarkets } from '../api/reference'
 import { useAuth } from '../contexts/AuthContext'
+import Spinner from '../components/Spinner'
 import type { Commodity, Country, Currency, Market, Price } from '../types'
 import { countryName } from '../utils/countryName'
 
@@ -319,6 +320,7 @@ function toDraft(p: Price): Draft {
 
 function EntriesTable({
   entries,
+  loading,
   countries,
   commodities,
   currencies,
@@ -333,6 +335,7 @@ function EntriesTable({
   onDelete,
 }: {
   entries: Price[]
+  loading: boolean
   countries: Country[]
   commodities: Commodity[]
   currencies: Currency[]
@@ -391,7 +394,11 @@ function EntriesTable({
         <span className="text-xs text-gray-400">{total} total</span>
       </div>
 
-      {entries.length === 0 ? (
+      {loading ? (
+        <div className="flex items-center justify-center py-12">
+          <Spinner />
+        </div>
+      ) : entries.length === 0 ? (
         <p className="text-sm text-gray-400 text-center py-8">No entries yet.</p>
       ) : (
         <>
@@ -572,6 +579,7 @@ export default function DataEntry() {
   const [entries, setEntries] = useState<Price[]>([])
   const [total, setTotal] = useState(0)
   const [page, setPage] = useState(1)
+  const [tableLoading, setTableLoading] = useState(false)
   const [deleteError, setDeleteError] = useState<string | null>(null)
 
   // Reference data
@@ -600,6 +608,7 @@ export default function DataEntry() {
   }, [])
 
   async function loadPage(p: number) {
+    setTableLoading(true)
     try {
       const data = await fetchPrices({
         country: filterCountry || undefined,
@@ -614,6 +623,8 @@ export default function DataEntry() {
       setPage(p)
     } catch {
       // silently fail — not critical
+    } finally {
+      setTableLoading(false)
     }
   }
 
@@ -731,6 +742,7 @@ export default function DataEntry() {
 
       <EntriesTable
         entries={entries}
+        loading={tableLoading}
         countries={countries}
         commodities={commodities}
         currencies={currencies}
