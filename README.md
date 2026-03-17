@@ -35,18 +35,20 @@ Beyond basic CRUD, the application provides analytics endpoints and an MCP serve
 
 **MCP server** — mounted at `/mcp/sse`, exposing five tools (`get_global_crisis_overview`, `get_crisis_summary`, `get_price_trends`, `compare_regional_prices`, `get_volatile_commodities`) for use with Claude Desktop or any MCP-compatible client.
 
-## Prerequisites
+## Development
+
+The recommended approach is to run only the database in Docker and the backend/frontend natively.
+
+### Prerequisites
 
 | Tool | Version | Notes |
 | --- | --- | --- |
 | Python | 3.14 | managed via conda |
 | Node.js | 22 | npm 10 |
-| Docker | 24+ | with Compose V2 plugin (`docker compose`) |
+| Docker | 24+ | with Compose V2 plugin — used to run the database |
 | conda | any | used to create the Python environment |
 
-### Python environment
-
-**Recommended (conda):**
+**Python environment (conda):**
 
 ```bash
 conda create -n COMP3011-Coursework-1 python=3.14
@@ -62,13 +64,13 @@ source .venv/bin/activate   # Windows: .venv\Scripts\activate
 pip install -r backend/requirements.txt
 ```
 
-### Frontend dependencies
+**Frontend dependencies:**
 
 ```bash
 npm install --prefix frontend
 ```
 
-## Environment variables
+### Environment variables
 
 Copy `.env.example` and fill in values:
 
@@ -78,10 +80,6 @@ Copy `.env.example` and fill in values:
 | `SECRET_KEY` | JWT signing key (generate with `openssl rand -hex 32`) |
 | `CORS_ORIGINS` | Comma-separated allowed origins |
 | `POSTGRES_DB` / `POSTGRES_USER` / `POSTGRES_PASSWORD` | Docker Compose DB config |
-
-## Development
-
-The recommended approach is to run only the database in Docker and the backend/frontend natively.
 
 ### 1. Start the database
 
@@ -126,6 +124,8 @@ python -m pytest --cov=app --cov-report=term-missing   # with coverage
 Target: 100% coverage.
 
 ## Production
+
+Requires Docker 24+ with the Compose V2 plugin.
 
 ```bash
 cp .env.example .env          # fill in SECRET_KEY, passwords, CORS_ORIGINS
