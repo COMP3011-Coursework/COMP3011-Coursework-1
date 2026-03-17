@@ -4,6 +4,7 @@ WORKDIR /app
 
 # Install dependencies
 COPY package.json package-lock.json* ./
+COPY scripts/ ./scripts/
 RUN npm ci
 
 # Copy source and build
@@ -28,6 +29,7 @@ FROM node:22-alpine AS development
 WORKDIR /app
 
 COPY package.json package-lock.json* ./
+COPY scripts/ ./scripts/
 RUN npm ci
 
 COPY . .
