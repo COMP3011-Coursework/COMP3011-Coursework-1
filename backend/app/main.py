@@ -47,11 +47,26 @@ async def _auto_seed() -> None:
     except Exception as exc:
         logger.warning("Could not download data files: %s — proceeding with any local files", exc)
     async with AsyncSessionLocal() as session:
-        await seed_commodities(session, data_dir)
-        await seed_currencies(session, data_dir)
-        await seed_markets(session, data_dir)
-        await seed_prices(session, data_dir)
+        logger.info("Seeding commodities…")
+        n = await seed_commodities(session, data_dir)
+        logger.info("  -> %d rows", n)
+
+        logger.info("Seeding currencies…")
+        n = await seed_currencies(session, data_dir)
+        logger.info("  -> %d rows", n)
+
+        logger.info("Seeding markets…")
+        n = await seed_markets(session, data_dir)
+        logger.info("  -> %d rows", n)
+
+        logger.info("Seeding prices (this may take a while)…")
+        n = await seed_prices(session, data_dir)
+        logger.info("  -> %d total rows", n)
+
+        logger.info("Creating admin user…")
         await seed_admin_user(session)
+        logger.info("  -> admin / admin123")
+
     logger.info("Seeding complete")
 
 

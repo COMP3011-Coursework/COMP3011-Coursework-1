@@ -94,27 +94,22 @@ async def seed_commodities(session: AsyncSession, data_dir: Path) -> int:
         print(f"  [SKIP] {csv_path.name} not found")
         return 0
 
-    rows_inserted = 0
+    batch: list[dict] = []
     with open(csv_path, newline="", encoding="utf-8") as f:
         for row in csv.DictReader(f):
-            await session.execute(
-                text(
-                    """
-                    INSERT INTO commodities (id, category, name)
-                    VALUES (:id, :category, :name)
-                    ON CONFLICT (id) DO NOTHING
-                    """
-                ),
-                {
-                    "id": int(row["commodity_id"]),
-                    "category": row.get("category", "").strip(),
-                    "name": row.get("commodity", "").strip(),
-                },
-            )
-            rows_inserted += 1
+            batch.append({
+                "id": int(row["commodity_id"]),
+                "category": row.get("category", "").strip(),
+                "name": row.get("commodity", "").strip(),
+            })
 
-    await session.commit()
-    return rows_inserted
+    if batch:
+        await session.execute(
+            text("INSERT INTO commodities (id, category, name) VALUES (:id, :category, :name) ON CONFLICT (id) DO NOTHING"),
+            batch,
+        )
+        await session.commit()
+    return len(batch)
 
 
 async def seed_currencies(session: AsyncSession, data_dir: Path) -> int:
@@ -123,26 +118,21 @@ async def seed_currencies(session: AsyncSession, data_dir: Path) -> int:
         print(f"  [SKIP] {csv_path.name} not found")
         return 0
 
-    rows_inserted = 0
+    batch: list[dict] = []
     with open(csv_path, newline="", encoding="utf-8") as f:
         for row in csv.DictReader(f):
-            await session.execute(
-                text(
-                    """
-                    INSERT INTO currencies (code, name)
-                    VALUES (:code, :name)
-                    ON CONFLICT (code) DO NOTHING
-                    """
-                ),
-                {
-                    "code": row.get("code", "").strip(),
-                    "name": row.get("name", "").strip(),
-                },
-            )
-            rows_inserted += 1
+            batch.append({
+                "code": row.get("code", "").strip(),
+                "name": row.get("name", "").strip(),
+            })
 
-    await session.commit()
-    return rows_inserted
+    if batch:
+        await session.execute(
+            text("INSERT INTO currencies (code, name) VALUES (:code, :name) ON CONFLICT (code) DO NOTHING"),
+            batch,
+        )
+        await session.commit()
+    return len(batch)
 
 
 async def seed_markets(session: AsyncSession, data_dir: Path) -> int:
@@ -151,33 +141,34 @@ async def seed_markets(session: AsyncSession, data_dir: Path) -> int:
         print(f"  [SKIP] {csv_path.name} not found")
         return 0
 
-    rows_inserted = 0
+    batch: list[dict] = []
     with open(csv_path, newline="", encoding="utf-8") as f:
         for row in csv.DictReader(f):
             lat = row.get("latitude", "").strip()
             lon = row.get("longitude", "").strip()
-            await session.execute(
-                text(
-                    """
-                    INSERT INTO markets (id, name, countryiso3, admin1, admin2, latitude, longitude)
-                    VALUES (:id, :name, :countryiso3, :admin1, :admin2, :latitude, :longitude)
-                    ON CONFLICT (id) DO NOTHING
-                    """
-                ),
-                {
-                    "id": int(row["market_id"]),
-                    "name": row.get("market", "").strip(),
-                    "countryiso3": row.get("countryiso3", "").strip(),
-                    "admin1": row.get("admin1", "").strip() or None,
-                    "admin2": row.get("admin2", "").strip() or None,
-                    "latitude": float(lat) if lat else None,
-                    "longitude": float(lon) if lon else None,
-                },
-            )
-            rows_inserted += 1
+            batch.append({
+                "id": int(row["market_id"]),
+                "name": row.get("market", "").strip(),
+                "countryiso3": row.get("countryiso3", "").strip(),
+                "admin1": row.get("admin1", "").strip() or None,
+                "admin2": row.get("admin2", "").strip() or None,
+                "latitude": float(lat) if lat else None,
+                "longitude": float(lon) if lon else None,
+            })
 
-    await session.commit()
-    return rows_inserted
+    if batch:
+        await session.execute(
+            text(
+                """
+                INSERT INTO markets (id, name, countryiso3, admin1, admin2, latitude, longitude)
+                VALUES (:id, :name, :countryiso3, :admin1, :admin2, :latitude, :longitude)
+                ON CONFLICT (id) DO NOTHING
+                """
+            ),
+            batch,
+        )
+        await session.commit()
+    return len(batch)
 
 
 async def seed_prices(session: AsyncSession, data_dir: Path) -> int:
