@@ -175,10 +175,7 @@ async def seed_markets(session: AsyncSession, data_dir: Path) -> int:
 
 
 async def seed_prices(session: AsyncSession, data_dir: Path) -> int:
-    csv_files = sorted(
-        f for f in glob.glob(str(data_dir / "wfp_food_prices_*.csv"))
-        if (m := __import__('re').search(r'_(\d{4})\.csv$', f)) and int(m.group(1)) <= 2015
-    )
+    csv_files = sorted(glob.glob(str(data_dir / "wfp_food_prices_*.csv")))
     if not csv_files:
         logger.warning("[SKIP] No wfp_food_prices_*.csv files found in %s", data_dir)
         return 0
