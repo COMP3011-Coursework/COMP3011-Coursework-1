@@ -1,5 +1,5 @@
 from datetime import date
-from typing import Annotated, Optional
+from typing import Optional
 
 from fastapi import APIRouter, Depends, HTTPException, Query, status
 from sqlalchemy import func, select
@@ -14,6 +14,8 @@ from app.schemas.price import PriceCreate, PriceListResponse, PriceResponse, Pri
 
 router = APIRouter(prefix="/prices", tags=["prices"])
 
+_404 = {"description": "Price not found"}
+
 
 async def _validate_currency(code: str, db: AsyncSession) -> None:
     result = await db.execute(select(Currency).where(Currency.code == code))
@@ -24,7 +26,15 @@ async def _validate_currency(code: str, db: AsyncSession) -> None:
         )
 
 
-@router.post("", response_model=PriceResponse, status_code=status.HTTP_201_CREATED)
+@router.post(
+    "",
+    response_model=PriceResponse,
+    status_code=status.HTTP_201_CREATED,
+    summary="Create a price entry",
+    description="Record a new food price observation. Requires authentication. The `currency_code` must exist in the currencies reference table.",
+    response_description="The newly created price record",
+    responses={422: {"description": "Unknown currency code"}},
+)
 async def create_price(
     price_in: PriceCreate,
     db: AsyncSession = Depends(get_db),
@@ -38,16 +48,26 @@ async def create_price(
     return price
 
 
-@router.get("", response_model=PriceListResponse)
+@router.get(
+    "",
+    response_model=PriceListResponse,
+    summary="List price records",
+    description=(
+        "Return a paginated list of price observations. "
+        "Filter by country (ISO 3166-1 alpha-3), commodity, market, and/or date range. "
+        "Results are ordered by date descending. Maximum page size is 200."
+    ),
+    response_description="Paginated list of price records with total count",
+)
 async def list_prices(
     db: AsyncSession = Depends(get_db),
-    country: Optional[str] = None,
-    commodity_id: Optional[int] = None,
-    market_id: Optional[int] = None,
-    date_from: Optional[date] = None,
-    date_to: Optional[date] = None,
-    page: int = 1,
-    page_size: int = Query(default=50, le=200),
+    country: Optional[str] = Query(default=None, min_length=3, max_length=3, description="ISO 3166-1 alpha-3 country code, e.g. `ETH`"),
+    commodity_id: Optional[int] = Query(default=None, description="Filter by commodity ID"),
+    market_id: Optional[int] = Query(default=None, description="Filter by market ID"),
+    date_from: Optional[date] = Query(default=None, description="Inclusive start date (YYYY-MM-DD)"),
+    date_to: Optional[date] = Query(default=None, description="Inclusive end date (YYYY-MM-DD)"),
+    page: int = Query(default=1, ge=1, description="Page number (1-indexed)"),
+    page_size: int = Query(default=50, ge=1, le=200, description="Number of records per page"),
 ) -> PriceListResponse:
     filters = []
     if country is not None:
@@ -71,14 +91,20 @@ async def list_prices(
     items_query = select(Price)
     if filters:
         items_query = items_query.where(*filters)
-    items_query = items_query.offset(offset).limit(page_size)
+    items_query = items_query.order_by(Price.date.desc(), Price.id.desc()).offset(offset).limit(page_size)
     items_result = await db.execute(items_query)
     items = items_result.scalars().all()
 
     return PriceListResponse(items=list(items), total=total, page=page, page_size=page_size)
 
 
-@router.get("/{price_id}", response_model=PriceResponse)
+@router.get(
+    "/{price_id}",
+    response_model=PriceResponse,
+    summary="Get a price record by ID",
+    response_description="The requested price record",
+    responses={404: _404},
+)
 async def get_price(
     price_id: int,
     db: AsyncSession = Depends(get_db),
@@ -90,7 +116,14 @@ async def get_price(
     return price
 
 
-@router.put("/{price_id}", response_model=PriceResponse)
+@router.put(
+    "/{price_id}",
+    response_model=PriceResponse,
+    summary="Update a price record",
+    description="Partially update a price record. Only fields included in the request body are changed. Requires authentication.",
+    response_description="The updated price record",
+    responses={404: _404, 422: {"description": "Unknown currency code"}},
+)
 async def update_price(
     price_id: int,
     price_in: PriceUpdate,
@@ -111,7 +144,13 @@ async def update_price(
     return price
 
 
-@router.delete("/{price_id}", status_code=status.HTTP_204_NO_CONTENT)
+@router.delete(
+    "/{price_id}",
+    status_code=status.HTTP_204_NO_CONTENT,
+    summary="Delete a price record",
+    description="Permanently delete a price record by ID. Requires authentication.",
+    responses={404: _404},
+)
 async def delete_price(
     price_id: int,
     db: AsyncSession = Depends(get_db),

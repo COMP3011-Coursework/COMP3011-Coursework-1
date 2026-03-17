@@ -13,8 +13,18 @@ from app.schemas.auth import Token, UserCreate, UserResponse
 
 router = APIRouter(prefix="/auth", tags=["auth"])
 
+_NOT_FOUND = {"description": "Username or email not found, or password incorrect"}
 
-@router.post("/register", response_model=UserResponse, status_code=status.HTTP_201_CREATED)
+
+@router.post(
+    "/register",
+    response_model=UserResponse,
+    status_code=status.HTTP_201_CREATED,
+    summary="Register a new user",
+    description="Create a new user account. Username must be 3–50 characters; password must be at least 8 characters.",
+    response_description="The newly created user",
+    responses={400: {"description": "Username or email already registered"}},
+)
 async def register(
     user_in: UserCreate,
     db: AsyncSession = Depends(get_db),
@@ -41,7 +51,18 @@ async def register(
     return user
 
 
-@router.post("/login", response_model=Token)
+@router.post(
+    "/login",
+    response_model=Token,
+    summary="Log in and obtain a JWT",
+    description=(
+        "Authenticate with username and password (OAuth2 password flow). "
+        "Returns a Bearer JWT valid for 24 hours. "
+        "Include the token in subsequent requests as `Authorization: Bearer <token>`."
+    ),
+    response_description="JWT access token",
+    responses={401: _NOT_FOUND},
+)
 async def login(
     form_data: Annotated[OAuth2PasswordRequestForm, Depends()],
     db: AsyncSession = Depends(get_db),

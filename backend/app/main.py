@@ -34,7 +34,7 @@ async def _auto_seed() -> None:
     data_dir = Path(os.environ.get("DATA_DIR", "./data"))
 
     logger.info("Checking for missing data files…")
-    loop = asyncio.get_event_loop()
+    loop = asyncio.get_running_loop()
     await loop.run_in_executor(None, download_missing, data_dir)
 
     async with AsyncSessionLocal() as session:
