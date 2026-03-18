@@ -33,8 +33,8 @@ Technology choices were guided by structured GenAI exploration of alternatives
 alongside industry best practice.
 \textbf{PostgreSQL} was chosen for its window functions and CTE support, essential
 for the crisis-score computation.
-\textbf{SQLAlchemy} \parencite{sqlalchemy_docs} provides an async ORM; \textbf{Alembic}
-\parencite{alembic_docs} handles versioned schema migrations.
+\textbf{SQLAlchemy} \parencite{sqlalchemy_docs} provides an async ORM with schema
+creation managed via \texttt{create\_all()} on startup.
 \textbf{FastAPI} \parencite{fastapi_docs} was preferred over Django REST Framework
 for its lower overhead and automatic OpenAPI documentation generation from type
 annotations; \textbf{Pydantic} \parencite{pydantic_docs} enforces strict runtime
@@ -184,7 +184,7 @@ Shared fixtures (database session, test user, auth headers, commodity/market/cur
 records) are defined in \texttt{conftest.py} and reused across test classes to
 keep tests concise and avoid duplication.
 The frontend was tested manually across browsers; MCP integration was verified
-by connecting Claude Code and Claude Desktop to the live \texttt{/mcp} endpoint
+by connecting Claude Code to the live \texttt{/mcp} endpoint
 and issuing representative natural-language queries.
 
 \paragraph{Deployment and Performance.}
@@ -242,8 +242,7 @@ The MCP server was explored entirely through Claude dialogue, which proposed Fas
 as a suitable library, explained the protocol's tool-registration model, and
 demonstrated integration patterns --- an example of high-level GenAI usage to
 understand an emerging technology rather than merely generate boilerplate.
-A key challenge was ensuring genuine comprehension of AI-generated code to answer
-examiner questions confidently; this requirement reinforced rather than bypassed
+A key challenge was ensuring genuine comprehension of AI-generated code, this requirement reinforced rather than bypassed
 understanding, since code that could not be explained was re-examined and revised.
 The crisis-score weighting scheme ($0.40\,v + 0.35\,t + 0.25\,b$) was itself
 developed through iterative dialogue with Claude, exploring trade-offs between
