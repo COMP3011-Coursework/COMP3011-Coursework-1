@@ -20,7 +20,7 @@ Default admin credentials: username `admin`, password `admin123`.
 - **Price explorer** — Filter and paginate WFP price records by country, commodity, and date
 - **Data entry** — Authenticated CRUD for price records
 - **Crisis scoring** — Composite algorithm (volatility + trend + breadth) ranked across all countries
-- **MCP server** — 5 LLM tools exposed over SSE for use with Claude Desktop
+- **MCP server** — 5 LLM tools exposed over HTTP for use with Claude Code or Claude Desktop
 
 ## Tech stack
 
@@ -43,9 +43,56 @@ Interactive docs (`/docs` Swagger UI, `/redoc`, `/openapi.json`) are served dire
 
 Beyond basic CRUD, the application provides analytics endpoints and an MCP server for LLM integration. See [docs/advanced-features.md](docs/advanced-features.md) for full details.
 
-**Analytics** — five endpoints covering price trends, commodity volatility, regional price comparison, market summaries, and composite crisis scores.
+### Analytics
 
-**MCP server** — mounted at `/mcp/sse`, exposing five tools (`get_global_crisis_overview`, `get_crisis_summary`, `get_price_trends`, `compare_regional_prices`, `get_volatile_commodities`) for use with Claude Desktop or any MCP-compatible client.
+Five endpoints covering price trends, commodity volatility, regional price comparison, market summaries, and composite crisis scores.
+
+### MCP server
+
+Mounted at `/mcp/` (streamable HTTP transport), exposing five tools for use with Claude Code, Claude Desktop, or any MCP-compatible client.
+
+#### Claude Code
+
+Register the server once:
+
+```bash
+claude mcp add --transport http food-price http://localhost:8000/mcp/
+```
+
+Then inside a Claude Code session run `/mcp` to confirm the connection and 5 tools are listed. You can then ask Claude to call them directly, e.g.:
+
+> "Use get_global_crisis_overview to show the top countries by food crisis score"
+
+To use the live deployment instead:
+
+```bash
+claude mcp add --transport http food-price https://comp3011-coursework-1-backend.onrender.com/mcp/
+```
+
+#### Claude Desktop
+
+Add to `claude_desktop_config.json`:
+
+```json
+{
+  "mcpServers": {
+    "food-price": {
+      "type": "http",
+      "url": "http://localhost:8000/mcp/"
+    }
+  }
+}
+```
+
+#### Available tools
+
+| Tool | Description |
+| --- | --- |
+| `get_global_crisis_overview` | Top N countries ranked by composite crisis score |
+| `get_crisis_summary` | Detailed crisis breakdown for a specific country |
+| `get_price_trends` | Price trend over time for a commodity in a country |
+| `compare_regional_prices` | Compare commodity prices across countries |
+| `get_volatile_commodities` | Most price-volatile commodities globally or per country |
 
 ## Development
 

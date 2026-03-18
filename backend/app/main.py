@@ -20,6 +20,8 @@ from app.routers import reference as reference_router_module
 logger = logging.getLogger(__name__)
 _app_logger = logging.getLogger("app")
 
+mcp_http_app = mcp_server.http_app(path="/")
+
 
 async def _auto_seed() -> None:
     """Download data files if missing, then seed the database if it is empty."""
@@ -90,7 +92,8 @@ async def lifespan(app: FastAPI):
         cache.wfp_countries = {row[0] for row in result.all()}
     logger.info("Cached %d WFP countries", len(cache.wfp_countries))
 
-    yield
+    async with mcp_http_app.lifespan(app):
+        yield
 
 
 def create_app() -> FastAPI:
@@ -120,7 +123,7 @@ def create_app() -> FastAPI:
     app.include_router(analytics_router_module.router, prefix="/api/v1")
     app.include_router(reference_router_module.router, prefix="/api/v1")
 
-    app.mount("/mcp", mcp_server.http_app())
+    app.mount("/mcp", mcp_http_app)
 
     return app
 
