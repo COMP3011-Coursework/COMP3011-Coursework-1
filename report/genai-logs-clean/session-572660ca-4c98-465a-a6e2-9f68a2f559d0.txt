@@ -1,0 +1,425 @@
+# Check FastAPI definitions, for any incorrect or not detailed enough, or type ...
+
+**Session ID:** `572660ca-4c98-465a-a6e2-9f68a2f559d0`  
+**Started:** 2026-03-16 23:52 UTC  
+**Ended:** 2026-03-17 01:27 UTC  
+**Source:** Claude Code (local session log)
+
+---
+
+## **Human** _2026-03-16 23:52 UTC_
+
+Check FastAPI definitions, for any incorrect or not detailed enough, or type errors, etc., fix and improve them
+
+---
+
+## **Assistant** _2026-03-16 23:52 UTC_
+
+*[Tool call: `Agent`]*
+
+---
+
+## **Assistant** _2026-03-17 01:14 UTC_
+
+Let me read the actual source files to find specific issues.
+
+---
+
+## **Assistant** _2026-03-17 01:14 UTC_
+
+*[Tool call: `Read` --- `/Users/andy/Library/CloudStorage/OneDrive-UniversityofLeeds/Years/202526/2. COMP3011 Web Services and Web Data/Coursework 1/COMP3011-Coursework-1/backend/app/routers/prices.py`]*
+
+---
+
+## **Assistant** _2026-03-17 01:14 UTC_
+
+*[Tool call: `Read` --- `/Users/andy/Library/CloudStorage/OneDrive-UniversityofLeeds/Years/202526/2. COMP3011 Web Services and Web Data/Coursework 1/COMP3011-Coursework-1/backend/app/routers/analytics.py`]*
+
+---
+
+## **Assistant** _2026-03-17 01:14 UTC_
+
+*[Tool call: `Read` --- `/Users/andy/Library/CloudStorage/OneDrive-UniversityofLeeds/Years/202526/2. COMP3011 Web Services and Web Data/Coursework 1/COMP3011-Coursework-1/backend/app/routers/reference.py`]*
+
+---
+
+## **Assistant** _2026-03-17 01:14 UTC_
+
+*[Tool call: `Read` --- `/Users/andy/Library/CloudStorage/OneDrive-UniversityofLeeds/Years/202526/2. COMP3011 Web Services and Web Data/Coursework 1/COMP3011-Coursework-1/backend/app/routers/auth.py`]*
+
+---
+
+## **Assistant** _2026-03-17 01:14 UTC_
+
+*[Tool call: `Read` --- `/Users/andy/Library/CloudStorage/OneDrive-UniversityofLeeds/Years/202526/2. COMP3011 Web Services and Web Data/Coursework 1/COMP3011-Coursework-1/backend/app/schemas/price.py`]*
+
+---
+
+## **Assistant** _2026-03-17 01:14 UTC_
+
+*[Tool call: `Read` --- `/Users/andy/Library/CloudStorage/OneDrive-UniversityofLeeds/Years/202526/2. COMP3011 Web Services and Web Data/Coursework 1/COMP3011-Coursework-1/backend/app/schemas/analytics.py`]*
+
+---
+
+## **Assistant** _2026-03-17 01:14 UTC_
+
+*[Tool call: `Read` --- `/Users/andy/Library/CloudStorage/OneDrive-UniversityofLeeds/Years/202526/2. COMP3011 Web Services and Web Data/Coursework 1/COMP3011-Coursework-1/backend/app/schemas/reference.py`]*
+
+---
+
+## **Assistant** _2026-03-17 01:14 UTC_
+
+*[Tool call: `Read` --- `/Users/andy/Library/CloudStorage/OneDrive-UniversityofLeeds/Years/202526/2. COMP3011 Web Services and Web Data/Coursework 1/COMP3011-Coursework-1/backend/app/schemas/auth.py`]*
+
+---
+
+## **Assistant** _2026-03-17 01:14 UTC_
+
+*[Tool call: `Read` --- `/Users/andy/Library/CloudStorage/OneDrive-UniversityofLeeds/Years/202526/2. COMP3011 Web Services and Web Data/Coursework 1/COMP3011-Coursework-1/backend/app/main.py`]*
+
+---
+
+## **Assistant** _2026-03-17 01:14 UTC_
+
+*[Tool call: `Read` --- `/Users/andy/Library/CloudStorage/OneDrive-UniversityofLeeds/Years/202526/2. COMP3011 Web Services and Web Data/Coursework 1/COMP3011-Coursework-1/backend/app/services/analytics.py`]*
+
+---
+
+## **Assistant** _2026-03-17 01:15 UTC_
+
+Now I have a clear picture. Let me fix the issues I found across all the files:
+
+---
+
+## **Assistant** _2026-03-17 01:15 UTC_
+
+*[Tool call: `ToolSearch`]*
+
+---
+
+## **Assistant** _2026-03-17 01:15 UTC_
+
+*[Tool call: `TodoWrite`]*
+
+---
+
+## **Assistant** _2026-03-17 01:15 UTC_
+
+*[Tool call: `Edit` --- `/Users/andy/Library/CloudStorage/OneDrive-UniversityofLeeds/Years/202526/2. COMP3011 Web Services and Web Data/Coursework 1/COMP3011-Coursework-1/backend/app/routers/prices.py`]*
+
+---
+
+## **Assistant** _2026-03-17 01:15 UTC_
+
+*[Tool call: `Edit` --- `/Users/andy/Library/CloudStorage/OneDrive-UniversityofLeeds/Years/202526/2. COMP3011 Web Services and Web Data/Coursework 1/COMP3011-Coursework-1/backend/app/routers/prices.py`]*
+
+---
+
+## **Assistant** _2026-03-17 01:16 UTC_
+
+*[Tool call: `Edit` --- `/Users/andy/Library/CloudStorage/OneDrive-UniversityofLeeds/Years/202526/2. COMP3011 Web Services and Web Data/Coursework 1/COMP3011-Coursework-1/backend/app/routers/prices.py`]*
+
+---
+
+## **Assistant** _2026-03-17 01:16 UTC_
+
+*[Tool call: `TodoWrite`]*
+
+---
+
+## **Assistant** _2026-03-17 01:16 UTC_
+
+*[Tool call: `Edit` --- `/Users/andy/Library/CloudStorage/OneDrive-UniversityofLeeds/Years/202526/2. COMP3011 Web Services and Web Data/Coursework 1/COMP3011-Coursework-1/backend/app/schemas/price.py`]*
+
+---
+
+## **Assistant** _2026-03-17 01:16 UTC_
+
+Now update `PriceUpdate` to have the same constraints:
+
+---
+
+## **Assistant** _2026-03-17 01:16 UTC_
+
+*[Tool call: `Edit` --- `/Users/andy/Library/CloudStorage/OneDrive-UniversityofLeeds/Years/202526/2. COMP3011 Web Services and Web Data/Coursework 1/COMP3011-Coursework-1/backend/app/schemas/price.py`]*
+
+---
+
+## **Assistant** _2026-03-17 01:16 UTC_
+
+*[Tool call: `TodoWrite`]*
+
+---
+
+## **Assistant** _2026-03-17 01:16 UTC_
+
+*[Tool call: `Edit` --- `/Users/andy/Library/CloudStorage/OneDrive-UniversityofLeeds/Years/202526/2. COMP3011 Web Services and Web Data/Coursework 1/COMP3011-Coursework-1/backend/app/schemas/auth.py`]*
+
+---
+
+## **Assistant** _2026-03-17 01:16 UTC_
+
+*[Tool call: `TodoWrite`]*
+
+---
+
+## **Assistant** _2026-03-17 01:17 UTC_
+
+*[Tool call: `Edit` --- `/Users/andy/Library/CloudStorage/OneDrive-UniversityofLeeds/Years/202526/2. COMP3011 Web Services and Web Data/Coursework 1/COMP3011-Coursework-1/backend/app/routers/reference.py`]*
+
+---
+
+## **Assistant** _2026-03-17 01:17 UTC_
+
+*[Tool call: `TodoWrite`]*
+
+---
+
+## **Assistant** _2026-03-17 01:17 UTC_
+
+*[Tool call: `Edit` --- `/Users/andy/Library/CloudStorage/OneDrive-UniversityofLeeds/Years/202526/2. COMP3011 Web Services and Web Data/Coursework 1/COMP3011-Coursework-1/backend/app/schemas/analytics.py`]*
+
+---
+
+## **Assistant** _2026-03-17 01:17 UTC_
+
+*[Tool call: `Edit` --- `/Users/andy/Library/CloudStorage/OneDrive-UniversityofLeeds/Years/202526/2. COMP3011 Web Services and Web Data/Coursework 1/COMP3011-Coursework-1/backend/app/schemas/analytics.py`]*
+
+---
+
+## **Assistant** _2026-03-17 01:17 UTC_
+
+*[Tool call: `TodoWrite`]*
+
+---
+
+## **Assistant** _2026-03-17 01:18 UTC_
+
+*[Tool call: `Edit` --- `/Users/andy/Library/CloudStorage/OneDrive-UniversityofLeeds/Years/202526/2. COMP3011 Web Services and Web Data/Coursework 1/COMP3011-Coursework-1/backend/app/main.py`]*
+
+---
+
+## **Assistant** _2026-03-17 01:18 UTC_
+
+*[Tool call: `TodoWrite`]*
+
+---
+
+## **Assistant** _2026-03-17 01:18 UTC_
+
+*[Tool call: `Edit` --- `/Users/andy/Library/CloudStorage/OneDrive-UniversityofLeeds/Years/202526/2. COMP3011 Web Services and Web Data/Coursework 1/COMP3011-Coursework-1/backend/app/routers/analytics.py`]*
+
+---
+
+## **Assistant** _2026-03-17 01:18 UTC_
+
+*[Tool call: `TodoWrite`]*
+
+---
+
+## **Assistant** _2026-03-17 01:19 UTC_
+
+All done. Here's a summary of every fix made:
+
+**[routers/prices.py](backend/app/routers/prices.py)**
+- Removed unused `Annotated` import
+- Added `ge=1` constraint to `page` (was unvalidated --- page 0 would produce a negative offset)
+- Added `ge=1` to `page_size` (was only bounded above)
+- Added `.order_by(Price.date.desc(), Price.id.desc())` for deterministic pagination
+
+**[schemas/price.py](backend/app/schemas/price.py)**
+- `countryiso3`: added `min_length=3, max_length=3` (ISO 3166-1 alpha-3 must be exactly 3 chars)
+- `currency_code`: added `min_length=1, max_length=10`
+- `price` / `usdprice`: added `ge=0` --- prices can't be negative
+- Same constraints applied to `PriceUpdate`
+
+**[schemas/auth.py](backend/app/schemas/auth.py)**
+- `username`: added `min_length=3, max_length=50`
+- `password`: added `min_length=8` (security requirement)
+- `UserResponse.email`: was `str`, now `EmailStr` (consistent with `UserCreate`)
+
+**[routers/reference.py](backend/app/routers/reference.py)**
+- `list_markets`: added `order_by(Market.name)` --- was returning in arbitrary DB order
+
+**[schemas/analytics.py](backend/app/schemas/analytics.py)**
+- `CrisisScoreResponse.severity`: changed `str` -> `Literal["stable", "moderate", "high", "critical"]` --- documents and enforces the allowed values
+
+**[main.py](backend/app/main.py)**
+- `asyncio.get_event_loop()` -> `asyncio.get_running_loop()` --- the former is deprecated in Python 3.10+ when called inside a running async context
+
+**[routers/analytics.py](backend/app/routers/analytics.py)**
+- `GET /analytics/trends`: added country cache validation (same pattern used by `/crisis-scores/{country}`), and 404 if no data points returned
+- `GET /analytics/volatility`: added country cache validation (was inconsistent with `/crisis-scores/{country}`)
+
+---
+
+## **Human** _2026-03-17 01:20 UTC_
+
+check return values and examples as well, also request examples
+
+---
+
+## **Assistant** _2026-03-17 01:21 UTC_
+
+Let me read the current state of all route files before making changes.
+
+---
+
+## **Assistant** _2026-03-17 01:21 UTC_
+
+*[Tool call: `Read` --- `/Users/andy/Library/CloudStorage/OneDrive-UniversityofLeeds/Years/202526/2. COMP3011 Web Services and Web Data/Coursework 1/COMP3011-Coursework-1/backend/app/routers/analytics.py`]*
+
+---
+
+## **Assistant** _2026-03-17 01:21 UTC_
+
+*[Tool call: `TodoWrite`]*
+
+---
+
+## **Assistant** _2026-03-17 01:22 UTC_
+
+*[Tool call: `Write` --- `/Users/andy/Library/CloudStorage/OneDrive-UniversityofLeeds/Years/202526/2. COMP3011 Web Services and Web Data/Coursework 1/COMP3011-Coursework-1/backend/app/schemas/auth.py`]*
+
+---
+
+## **Assistant** _2026-03-17 01:22 UTC_
+
+*[Tool call: `Write` --- `/Users/andy/Library/CloudStorage/OneDrive-UniversityofLeeds/Years/202526/2. COMP3011 Web Services and Web Data/Coursework 1/COMP3011-Coursework-1/backend/app/schemas/price.py`]*
+
+---
+
+## **Assistant** _2026-03-17 01:22 UTC_
+
+*[Tool call: `Write` --- `/Users/andy/Library/CloudStorage/OneDrive-UniversityofLeeds/Years/202526/2. COMP3011 Web Services and Web Data/Coursework 1/COMP3011-Coursework-1/backend/app/schemas/reference.py`]*
+
+---
+
+## **Assistant** _2026-03-17 01:22 UTC_
+
+*[Tool call: `Write` --- `/Users/andy/Library/CloudStorage/OneDrive-UniversityofLeeds/Years/202526/2. COMP3011 Web Services and Web Data/Coursework 1/COMP3011-Coursework-1/backend/app/schemas/analytics.py`]*
+
+---
+
+## **Assistant** _2026-03-17 01:22 UTC_
+
+*[Tool call: `TodoWrite`]*
+
+---
+
+## **Assistant** _2026-03-17 01:22 UTC_
+
+Now update all four routers with summary, description, response_description, and responses:
+
+---
+
+## **Assistant** _2026-03-17 01:22 UTC_
+
+*[Tool call: `Write` --- `/Users/andy/Library/CloudStorage/OneDrive-UniversityofLeeds/Years/202526/2. COMP3011 Web Services and Web Data/Coursework 1/COMP3011-Coursework-1/backend/app/routers/auth.py`]*
+
+---
+
+## **Assistant** _2026-03-17 01:23 UTC_
+
+*[Tool call: `Write` --- `/Users/andy/Library/CloudStorage/OneDrive-UniversityofLeeds/Years/202526/2. COMP3011 Web Services and Web Data/Coursework 1/COMP3011-Coursework-1/backend/app/routers/prices.py`]*
+
+---
+
+## **Assistant** _2026-03-17 01:23 UTC_
+
+*[Tool call: `Write` --- `/Users/andy/Library/CloudStorage/OneDrive-UniversityofLeeds/Years/202526/2. COMP3011 Web Services and Web Data/Coursework 1/COMP3011-Coursework-1/backend/app/routers/reference.py`]*
+
+---
+
+## **Assistant** _2026-03-17 01:24 UTC_
+
+*[Tool call: `Write` --- `/Users/andy/Library/CloudStorage/OneDrive-UniversityofLeeds/Years/202526/2. COMP3011 Web Services and Web Data/Coursework 1/COMP3011-Coursework-1/backend/app/routers/analytics.py`]*
+
+---
+
+## **Assistant** _2026-03-17 01:24 UTC_
+
+*[Tool call: `TodoWrite`]*
+
+---
+
+## **Assistant** _2026-03-17 01:24 UTC_
+
+Here's a summary of everything added:
+
+**Schemas --- `json_schema_extra` examples**
+- [schemas/auth.py](backend/app/schemas/auth.py): `UserCreate`, `UserResponse`, `Token` --- realistic example values
+- [schemas/price.py](backend/app/schemas/price.py): `PriceCreate` (full ETH/Maize observation), `PriceUpdate` (partial patch), `PriceResponse`, `PriceListResponse`
+- [schemas/reference.py](backend/app/schemas/reference.py): `CountryResponse`, `CommodityResponse`, `MarketResponse`, `CurrencyResponse`
+- [schemas/analytics.py](backend/app/schemas/analytics.py): all five response models with realistic WFP-style data
+
+**Routers --- `summary`, `description`, `response_description`, `responses`**
+- [routers/auth.py](backend/app/routers/auth.py): login explains the Bearer flow and 24-hour expiry; register documents constraints; both map 400/401 errors
+- [routers/prices.py](backend/app/routers/prices.py): all query params now have `description`; `country` also gets `min_length`/`max_length` at the query level; all write endpoints document 404/422 responses
+- [routers/reference.py](backend/app/routers/reference.py): `country` filter on `/markets` upgraded from bare `Optional[str]` to a `Query(min_length=3, max_length=3, description=...)` for consistency with prices
+- [routers/analytics.py](backend/app/routers/analytics.py): all query params documented; crisis-score formula and severity bands explained in the description; `responses` mapped for every 404-returning endpoint
+
+---
+
+## **Human** _2026-03-17 01:24 UTC_
+
+In schemas, what is this: Body_login_api_v1_auth_login_post
+
+---
+
+## **Assistant** _2026-03-17 01:25 UTC_
+
+That's FastAPI's auto-generated OpenAPI schema name for the form body of your login endpoint. It's constructed as:
+
+```
+Body_{function_name}_{path_with_underscores}_{method}
+Body_  login  _api_v1_auth_login_  post
+```
+
+It appears because `/auth/login` uses `OAuth2PasswordRequestForm` via `Depends()`, which is a **form-encoded** body (not JSON). FastAPI can't give it a clean model name since `OAuth2PasswordRequestForm` is a dependency, not a Pydantic model you defined --- so it generates that ugly name automatically.
+
+It's harmless and expected. The only way to suppress it would be to replace `OAuth2PasswordRequestForm` with a custom Pydantic model and `Content-Type: application/json`, but that would break OAuth2 spec compatibility (clients expect `application/x-www-form-urlencoded` for the token endpoint). Leave it as-is.
+
+---
+
+## **Human** _2026-03-17 01:26 UTC_
+
+commit
+
+---
+
+## **Assistant** _2026-03-17 01:26 UTC_
+
+*[Tool call: `Skill`]*
+
+---
+
+## **Assistant** _2026-03-17 01:26 UTC_
+
+*[Tool call: `Bash` --- `cd "/Users/andy/Library/CloudStorage/OneDrive-UniversityofLeeds/Years/202526/2. COMP3011 Web Services and Web Data/Cours`]*
+
+---
+
+## **Assistant** _2026-03-17 01:26 UTC_
+
+*[Tool call: `Bash` --- `cd "/Users/andy/Library/CloudStorage/OneDrive-UniversityofLeeds/Years/202526/2. COMP3011 Web Services and Web Data/Cours`]*
+
+---
+
+## **Assistant** _2026-03-17 01:26 UTC_
+
+*[Tool call: `Bash` --- `cd "/Users/andy/Library/CloudStorage/OneDrive-UniversityofLeeds/Years/202526/2. COMP3011 Web Services and Web Data/Cours`]*
+
+---
+
+## **Assistant** _2026-03-17 01:26 UTC_
+
+*[Tool call: `Bash` --- `cd "/Users/andy/Library/CloudStorage/OneDrive-UniversityofLeeds/Years/202526/2. COMP3011 Web Services and Web Data/Cours`]*
+
+---
+
+## **Assistant** _2026-03-17 01:27 UTC_
+
+Committed as `09ad4a7`.
+
+---

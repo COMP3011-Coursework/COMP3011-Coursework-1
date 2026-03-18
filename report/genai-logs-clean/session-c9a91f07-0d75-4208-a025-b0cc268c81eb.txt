@@ -1,0 +1,36 @@
+# Read @COMP3011_Coursework1_Brief__2025_2026.pdf --- this project is for this co...
+
+**Session ID:** `c9a91f07-0d75-4208-a025-b0cc268c81eb`  
+**Started:** 2026-03-14 18:19 UTC  
+**Ended:** 2026-03-14 18:19 UTC  
+**Source:** Claude Code (local session log)
+
+---
+
+## **Human** _2026-03-14 18:19 UTC_
+
+Read @COMP3011_Coursework1_Brief__2025_2026.pdf --- this project is for this coursework.
+
+Read @docs/plans/initial-design.md --- this is my initial design. Discuss with me if you want to change any decisions already made. Identify anything missing or unclear, then produce a finalized design document.
+
+Do not write any code yet. Save a full implementation plan first to @docs/plans/02-final-design.md, broken down into phases.
+
+---
+
+## **Assistant** _2026-03-14 18:19 UTC_
+
+*[Tool call: `Read` --- `/Users/andy/Library/CloudStorage/OneDrive-UniversityofLeeds/Years/202526/2. COMP3011 Web Services and Web Data/Coursework 1/COMP3011-Coursework-1/COMP3011_Coursework1_Brief__2025_2026.pdf`]*
+
+---
+
+## **Assistant** _2026-03-14 18:19 UTC_
+
+*[Tool call: `Glob` --- `docs/plans/**`]*
+
+---
+
+## **Human** _2026-03-14 18:19 UTC_
+
+[Request interrupted by user]
+
+---

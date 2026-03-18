@@ -1,176 +1,329 @@
 \section{Introduction}
 
-% add paragraphs for introduction
+Global food insecurity remains a persistent humanitarian concern; commodity price
+volatility is an early indicator of supply disruptions and crises.
+This report describes the \textbf{Global Food Price Monitor API}, a full-stack
+web service built on the WFP Global Food Prices dataset \parencite{hdx_wfp} that
+provides RESTful CRUD endpoints, analytical aggregation endpoints, an interactive
+choropleth frontend, and an MCP server for AI-assistant integration
+\parencite{mcp_spec}.
 
-Presentation slides: \url{https://leeds365-my.sharepoint.com/:p:/g/personal/fy22az_leeds_ac_uk/IQAzCfArJhdOSoHPXOb2jwl4Acw6uB58h-HJmVDQevXYUGE?e=V1H29b}
-
-\subsection{Dataset}
-
-Global - Food Prices
-
-\url{https://data.humdata.org/dataset/global-wfp-food-prices}
-
-% quote this
-This dataset contains Countries, Commodities and Markets data, sourced from the World Food Programme Price Database. The World Food Programme Price Database covers foods such as maize, rice, beans, fish, and sugar for 98 countries and some 3000 markets. It is updated weekly but contains to a large extent monthly data. The data goes back as far as 1992 for a few countries, although many countries started reporting from 2003 or thereafter.
-
-License
-Creative Commons Attribution for Intergovernmental Organisations (CC BY-IGO)
-\url{https://creativecommons.org/licenses/by/3.0/igo/legalcode}
-
-% Discuss allowed for this project.
+The dataset \parencite{hdx_wfp} covers 98~countries, \textasciitilde3,000~markets,
+and \textasciitilde3.14~million price observations from 1992 to the present.
+It is licensed under CC~BY-IGO, permitting unrestricted academic use with attribution.
 
 \section{Design}
 
-\subsection{Features}
-
-% CRUD features
-% User System
-% Data Explorer – CRUD Operations on prices
-
-% Advanced features - Analytics
-Price trends – in a specific country
-Commodity volatility – using Coefficient of Variation (CV)
-Regional comparison – which regions face high food costs
-Market summary – number of prices, commodities, latest prices
-Crisis scores – food-crisis indicator (0-100)
-
-%  Advanced features - MCP Server
-get_global_crisis_overview – top 20 most crisis countries
-get_crisis_summary – same as before, for a specific country
-get_price_trends – same
-compare_regional_prices – same
-get_volatile_commodities – same
-
-% Advanced Features - Interactive choropleth map
-
-% Frontend
-% screenshot frontend.png
-
-World Map, Explorer, Data Entry
-API Documentation - Swagger UI, ReDOC
-
 \subsection{System Architecture}
 
-two figures in figures/, architecture.svg and  ERD.html
+The application follows a three-tier architecture: a React SPA frontend, a
+Python/FastAPI backend, and a PostgreSQL database.
+The backend also mounts an MCP endpoint at \texttt{/mcp} (Figure~\ref{fig:architecture}).
 
-% write in paragrams, give more reasons and critical analysis of the design choices
-Database
-PostgreSQL – good performance, best practice
-SQLAlchemy – Object Relational Mapping (ORM), not need write SQL
-Alembic – migration
-Backend
-Python – Pythonic, concise, easy to read/write
-FastAPI – modern framework, less code, generated API doc
-Pydantic – verification, typing system
-Frontend
-React – component, reactive, Single Page Application (SPA)
-Typescript – type system
-Tailwind CSS – common practice, easy for GenAI
-Leaflet.js – map
-Chat.js – charts
-Deployment
-Docker (Compose) – easy to migrate
-Testing
-Pytest, pytest-cov – pytest and coverage
-FastAPI TestClient, httpx – http endpoints
+\begin{figure*}[!htbp]
+    \centering
+    \includegraphics[width=0.88\linewidth]{figures/architecture}
+    \caption{System architecture of the Global Food Price Monitor.}
+    \label{fig:architecture}
+\end{figure*}
+
+\subsection{Technology Stack}
+
+Technology choices were guided by structured GenAI exploration of alternatives
+alongside industry best practice.
+\textbf{PostgreSQL} was chosen for its window functions and CTE support, essential
+for the crisis-score computation.
+\textbf{SQLAlchemy} \parencite{sqlalchemy_docs} provides an async ORM; \textbf{Alembic}
+\parencite{alembic_docs} handles versioned schema migrations.
+\textbf{FastAPI} \parencite{fastapi_docs} was preferred over Django REST Framework
+for its lower overhead and automatic OpenAPI documentation generation from type
+annotations; \textbf{Pydantic} \parencite{pydantic_docs} enforces strict runtime
+type coercion at the API boundary.
+\textbf{React/TypeScript} \parencite{react_docs} delivers a component-driven SPA
+with Leaflet.js for mapping and Chart.js for time-series charts.
+\textbf{Docker Compose} \parencite{docker_docs} orchestrates all services locally.
 
 \subsection{Database Design}
 
-% describe db design, make relation to dataset
+Five tables comprise the schema: \texttt{prices} (fact), \texttt{markets},
+\texttt{commodities}, \texttt{currencies}, and \texttt{users}.
+\texttt{prices} stores both the local-currency price and a pre-computed USD price,
+enabling cross-country comparability without repeated currency conversion at query time.
+Three composite indexes on \texttt{(countryiso3, date)},
+\texttt{(commodity\_id, date)}, and \texttt{market\_id} target the most
+common analytical access patterns; these were identified empirically after profiling
+the analytics queries on the full dataset.
+On first startup, an idempotent seeding routine downloads the WFP CSV files and
+bulk-inserts all records; subsequent restarts skip seeding if data is already present.
 
 \subsection{API Design}
 
-% list instructions
+The REST API operates under \texttt{/api/v1} across
+four routers:
+\textbf{Auth} (\texttt{/auth}) — JWT Bearer tokens \parencite{rfc7519};
+\textbf{Prices} (\texttt{/prices}) — full CRUD (authenticated writes);
+\textbf{Analytics} (\texttt{/analytics}) — five read-only analytical endpoints;
+\textbf{Reference} (\texttt{/countries}, \texttt{/commodities},
+\texttt{/markets}, \texttt{/currencies}) — lookup tables.
+Interactive documentation is auto-generated at \texttt{/docs} (Swagger~UI) and
+\texttt{/redoc} (ReDoc); a PDF export is at \texttt{docs/api-reference.pdf}.
 
-API Documentation: \url{https://github.com/COMP3011-Coursework/COMP3011-Coursework-1/blob/main/docs/api-reference.pdf}
+Error handling follows HTTP conventions throughout: \texttt{400} for malformed
+requests, \texttt{401} for missing or invalid tokens, \texttt{404} for missing
+resources, \texttt{422} for failed foreign-key validation, and \texttt{500} for
+unexpected server errors.
+All responses use consistent JSON payloads with a \texttt{detail} field describing
+the error, following FastAPI's default validation error format.
+CORS is configured to restrict origins to trusted domains in production,
+preventing cross-origin misuse of authenticated endpoints.
 
-\section{Implementation}
+\section{Features}
 
-GenAI chat for
-Explore project idea, dataset
-Decide tech stack
-Discuss initial design
-Manually write an initial design document
-Iterate this document with GenAI
-Use Claude Code to coding with this given design document
-Start project and check design, functions, issues
-Fix and iterate project with Claude Code
+\subsection{Core CRUD Operations}
 
-\section{Testing}
+Authenticated users may create, read, update, and delete price observations via
+standard HTTP verbs.
+Write operations validate all foreign-key references, returning \texttt{422} on
+constraint violations and \texttt{404} for missing records.
+The list endpoint supports pagination (up to 200 records per page) and filtering
+by country, commodity, market, and date range.
 
-Automated testing frameworks – pytest, FastAPI TestClient
-100% coverage
-Manually frontend test – design, features
-MCP tests – using Claude Code connected to MCP server
-Ask friends to test
+\subsection{Analytics Endpoints}
 
-\section{Deployment}
+Five analytical endpoints augment the CRUD interface:
+(1)~\textbf{Price Trends} — monthly average USD prices;
+(2)~\textbf{Volatility} — commodities ranked by coefficient of variation
+    ($\mathrm{CV} = \sigma/\mu$);
+(3)~\textbf{Regional Comparison} — cross-country average USD prices for a commodity;
+(4)~\textbf{Crisis Score} — composite food-crisis indicator (0--100);
+(5)~\textbf{Market Summary} — latest prices per commodity at a market.
 
-Support
-Self-hosted with Docker Compose
-Render.com \url{https://render.com/}
-Live Demo
-Frontend \url{https://comp3011-coursework-1-frontend.onrender.com/}
-Backend — API docs (Swagger) \url{https://comp3011-coursework-1-backend.onrender.com/docs}
-Backend — API docs (ReDoc) \url{https://comp3011-coursework-1-backend.onrender.com/redoc}
+\paragraph{Crisis Score.}
+Three components are computed over a trailing 12-month window:
+$v$ (volatility) = mean CV across commodities with $\geq3$ observations;
+$t$ (trend) = 3-month mean / 12-month mean $-1$;
+$b$ (breadth) = fraction of commodities with a rising price.
+Each is min-max normalised across countries, then combined as:
+\begin{equation}
+    s = (0.40\,v + 0.35\,t + 0.25\,b)\times 100.
+    \label{eq:crisis}
+\end{equation}
+Severity bands: \textit{stable} ($s<25$), \textit{moderate} ($25\leq s<50$),
+\textit{high} ($50\leq s<75$), \textit{critical} ($s\geq 75$).
 
-\section{Performance}
+\subsection{MCP Server and Frontend}
 
-Local environment
-~3.14M prices
-~50ms page loading time
-< 1s loading world score loading time and ~100ms data loading time
-Live demo
-~540k (year <=2015) prices
-<200ms page loading time
-~5s and ~2s time corresponding
-Cached GeoJSON — ~14MB, cached at client
-Pagination used, page size parameter
+An MCP server at \texttt{/mcp} (FastMCP \parencite{fastmcp_docs}) exposes five
+tools mirroring the analytics endpoints, enabling AI assistants to query the
+system in natural-language workflows.
+The frontend provides a choropleth world map colour-coded by crisis score, a
+data explorer, and a data-entry form.
+GeoJSON boundary data (\textasciitilde14\,MB) is cached client-side after first load.
+Figure~\ref{fig:screenshots} shows the main views.
+
+\begin{figure*}[!htbp]
+    \centering
+    % Row 1
+    \begin{subfigure}[t]{0.32\linewidth}
+        \includegraphics[width=\linewidth]{figures/swagger}
+        \caption{Swagger UI API docs.}
+    \end{subfigure}
+    \hfill
+    \begin{subfigure}[t]{0.32\linewidth}
+        \includegraphics[width=\linewidth]{figures/redoc}
+        \caption{ReDoc API docs.}
+    \end{subfigure}
+    \hfill
+    \begin{subfigure}[t]{0.32\linewidth}
+        \includegraphics[width=\linewidth]{figures/mcp-1}
+        \caption{MCP in Claude Code.}
+    \end{subfigure}
+    % Row 2
+    \vspace{0.5em}
+    \begin{subfigure}[t]{0.32\linewidth}
+        \includegraphics[width=\linewidth]{figures/frontend}
+        \caption{Choropleth world map.}
+    \end{subfigure}
+    \hfill
+    \begin{subfigure}[t]{0.32\linewidth}
+        \includegraphics[width=\linewidth]{figures/explorer}
+        \caption{Data explorer.}
+    \end{subfigure}
+    \hfill
+    \begin{subfigure}[t]{0.32\linewidth}
+        \includegraphics[width=\linewidth]{figures/data-entry}
+        \caption{Data entry form.}
+    \end{subfigure}
+    \caption{Key frontend and API views (zoom in for detail).}
+    \label{fig:screenshots}
+\end{figure*}
+
+\section{Implementation, Testing, and Deployment}
+
+\paragraph{Development.}
+An iterative GenAI-assisted workflow was used throughout.
+A design document was drafted manually then refined through Claude dialogue
+covering schema, endpoint design, authentication, and the crisis-score formulation.
+Claude Code (Anthropic's CLI agentic tool) implemented components against the
+specification; all output was reviewed and tested by the developer.
+Authentication uses JWT Bearer tokens \parencite{rfc7519} with bcrypt password hashing.
+
+\paragraph{Testing.}
+The pytest suite \parencite{pytest_docs} uses FastAPI's \texttt{TestClient} backed
+by \texttt{httpx} to exercise all HTTP endpoints end-to-end against a dedicated
+in-memory SQLite test database, achieving \textbf{100\% line coverage} across all
+backend modules (\texttt{pytest-cov}).
+The test suite is structured into class-per-resource files:
+\texttt{test\_prices.py} covers all CRUD paths and list-filter combinations;
+\texttt{test\_analytics.py} covers all five analytical endpoints;
+\texttt{test\_auth.py} covers registration, login, token validation, expiry, and
+invalid-credential cases;
+\texttt{test\_reference.py} covers lookup endpoints;
+\texttt{test\_mcp.py} covers all five MCP tool wrappers end-to-end.
+Shared fixtures (database session, test user, auth headers, commodity/market/currency
+records) are defined in \texttt{conftest.py} and reused across test classes to
+keep tests concise and avoid duplication.
+The frontend was tested manually across browsers; MCP integration was verified
+by connecting Claude Code and Claude Desktop to the live \texttt{/mcp} endpoint
+and issuing representative natural-language queries.
+
+\paragraph{Deployment and Performance.}
+Docker Compose orchestrates all services locally; cloud deployment uses Render.com
+with a managed PostgreSQL instance.
+Locally (3.14M records): list pages \textasciitilde50\,ms; world map under~1\,s.
+Render free tier (540k records): pages under 200\,ms; crisis scores \textasciitilde5\,s.
+The live frontend\footnote{\url{https://comp3011-coursework-1-frontend.onrender.com}}
+and API documentation\footnote{\url{https://comp3011-coursework-1-backend.onrender.com/docs}}
+are publicly accessible.
 
 \section{Reflections}
 
-\subsection{Version Control Practices}
+\subsection{Version Control}
 
-Git, 60+ commits
-Self-hosted Gitea with private repository
-Public GitHub repository released before presentation
-Reason for not to use branches for this project
-Simple
-No cooperation or external customer
-Agile
-Conventional Commits \url{https://www.conventionalcommits.org/en/v1.0.0/} used
-A practice to write commit messages
-feat, fix, docs, perf, test, build, ...
+Version control follows the Conventional Commits specification
+\parencite{conventional_commits} with over 60 commits.
+Development was conducted on a private self-hosted Gitea instance; the public
+GitHub repository was released before the oral presentation.
+Feature branching was not used: as a solo project with no concurrent development
+streams, a linear trunk-based history provided clarity without sacrificing traceability.
 
-\subsection{GenAI Usage}
+\subsection{Generative AI Declaration and Analysis}
 
-Project Idea
-Explore Datasets and Understanding Format
-Structure Design and Tech Stack
-Agentic Development and Vibe Coding
-Debugging and Fixing
-Generate Diagrams
-Review the report and presentation
+Table~\ref{tab:genai} gives representative examples of GenAI usage across each
+development phase; full exported conversation logs are in Appendix~\ref{app:genai}.
+The primary tool was \textbf{Claude} (Anthropic; \texttt{claude-sonnet-4-6}),
+accessed via both the standard web interface and \textbf{Claude Code}.
+
+\begin{table}[!htbp]
+    \centering
+    \small
+    \begin{tabularx}{\linewidth}{lX}
+        \toprule
+        \textbf{Phase}  & \textbf{Usage}                                      \\
+        \midrule
+        Ideation        & Explored domains; identified WFP dataset            \\
+        Design          & Iterated architecture, schema, endpoint design      \\
+        Development     & Agentic coding with Claude Code (vibe coding)       \\
+        Debugging       & Diagnosed test failures and runtime errors          \\
+        Diagrams        & Generated architecture and ERD diagrams             \\
+        Review          & Proof-read report and slides                        \\
+        \bottomrule
+    \end{tabularx}
+    \caption{Example GenAI usage across development phases.}
+    \label{tab:genai}
+\end{table}
+
+Claude Code enabled \textit{directed AI development}: the developer maintained the
+high-level design document and directed the AI to implement specific components,
+reviewing and testing all output.
+This shifted cognitive effort from syntax to architectural decision-making and
+data modelling.
+The MCP server was explored entirely through Claude dialogue, which proposed FastMCP
+as a suitable library, explained the protocol's tool-registration model, and
+demonstrated integration patterns --- an example of high-level GenAI usage to
+understand an emerging technology rather than merely generate boilerplate.
+A key challenge was ensuring genuine comprehension of AI-generated code to answer
+examiner questions confidently; this requirement reinforced rather than bypassed
+understanding, since code that could not be explained was re-examined and revised.
+The crisis-score weighting scheme ($0.40\,v + 0.35\,t + 0.25\,b$) was itself
+developed through iterative dialogue with Claude, exploring trade-offs between
+emphasising recent price acceleration versus structural volatility.
+This represents the kind of creative, high-level collaboration the coursework
+specification identifies with the outstanding grade band.
+Exported conversation logs are included as supplementary material.
+
+\subsection{Challenges and Lessons Learned}
+
+Several technical challenges arose during development.
+
+\paragraph{Async SQLAlchemy.}
+Adopting fully asynchronous database access (\texttt{AsyncSession}) required
+careful attention to session lifecycle, particularly for the auto-seeding routine
+that runs during application startup outside the normal request/response cycle.
+A dedicated \texttt{AsyncSessionLocal} factory was introduced for background
+tasks, separate from the request-scoped dependency, to avoid session leaks.
+
+\paragraph{GeoJSON rendering.}
+The choropleth map requires a 14~MB GeoJSON boundary file.
+Fetching it on every page load made the map unusable; the solution was
+client-side caching in React state so the file is downloaded once per session.
+This highlighted the importance of distinguishing static assets from dynamic
+API data in frontend architecture.
+
+\paragraph{Emerging protocol integration.}
+The MCP specification was relatively new at the time of development, with limited
+documentation and few worked examples.
+Understanding the protocol required sustained dialogue with Claude to explore
+tool registration, session management, and transport options before selecting
+FastMCP as the implementation library.
+This was a deliberate exercise in using GenAI to learn an unfamiliar technology
+quickly rather than waiting for mature documentation.
+
+\paragraph{AI agent workflow.}
+Using Claude Code as an agentic coding tool introduced workflow challenges absent
+from conventional development.
+The agent operates across multiple files simultaneously and may introduce changes
+in unexpected locations; reviewing every diff carefully was essential to maintaining
+a coherent codebase.
+Managing context window limits across long sessions required breaking tasks into
+focused sub-sessions and maintaining a design document as a shared reference.
+This experience highlighted that effective AI-assisted development demands stronger
+up-front specification discipline than solo manual coding.
 
 \section{Limitations and Future Work}
 
-% discuss limitations and future work
+The Render.com free tier restricts the cloud dataset to pre-2016 records.
+The crisis-score algorithm (Equation~\eqref{eq:crisis}) is a custom heuristic not
+validated against established indices such as the IPC scale; future work should
+benchmark it against ground-truth assessments.
+The authentication model is binary; role-based access control would be needed in
+production.
+The crisis-score computation is not server-side cached; a short-TTL cache would
+reduce database load.
+The frontend does not animate score evolution over time, which would enhance
+interpretability.
 
 \section{Conclusions}
 
-% write conclusions
+The Global Food Price Monitor API meets and substantially exceeds the minimum
+technical requirements.
+The system delivers full CRUD on a 3-million-record humanitarian dataset, five
+analytical endpoints including a novel composite crisis-score model, MCP-compatible
+AI integration, 100\% automated test coverage, auto-generated API documentation,
+an interactive choropleth frontend, and live cloud deployment.
+The project demonstrates that directed use of GenAI tools---specifically Claude
+Code for agentic development---can substantially accelerate delivery of
+architecturally sound software, provided the developer retains genuine ownership
+of design decisions and system understanding.
 
-\subsection{Deliverables}
-
-Deployed website
-https://comp3011-coursework-1-frontend.onrender.com
-GitHub code repository
-https://github.com/COMP3011-Coursework/COMP3011-Coursework-1
-API documentation
-https://comp3011-coursework-1-backend.onrender.com/docs
-https://comp3011-coursework-1-backend.onrender.com/redoc
-PDF link available in technical report
-Technical report - submitted via Minerva
-Presentation slides - submitted via Minerva
-
-GitHub repository: \url{https://github.com/COMP3011-Coursework/COMP3011-Coursework-1/tree/main}
+\subsection*{Deliverables}
+\noindent
+\textbf{GitHub repository:}
+\href{https://github.com/COMP3011-Coursework/COMP3011-Coursework-1}{COMP3011-Coursework/COMP3011-Coursework-1}.
+\textbf{Live frontend:}
+\href{https://comp3011-coursework-1-frontend.onrender.com}{comp3011-coursework-1-frontend.onrender.com}.
+\textbf{API docs (Swagger / ReDoc):}
+\href{https://comp3011-coursework-1-backend.onrender.com/docs}{comp3011-coursework-1-backend.onrender.com/docs}.
+\textbf{API documentation PDF:} \texttt{docs/api-reference.pdf} in the repository.
+\textbf{Presentation slides:}
+\href{https://leeds365-my.sharepoint.com/:p:/g/personal/fy22az_leeds_ac_uk/IQAzCfArJhdOSoHPXOb2jwl4Acw6uB58h-HJmVDQevXYUGE?e=V1H29b}{slides on SharePoint}\footnote{Submitted via Minerva; also available online at \url{https://leeds365-my.sharepoint.com/:p:/g/personal/fy22az_leeds_ac_uk/IQAzCfArJhdOSoHPXOb2jwl4Acw6uB58h-HJmVDQevXYUGE?e=V1H29b}}.

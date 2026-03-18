@@ -1,0 +1,83 @@
+# Read @COMP3011_Coursework1_Brief__2025_2026.pdf --- this project is for this co...
+
+**Session ID:** `3cd69ba2-26c3-4139-b446-ffd60281df2f`  
+**Started:** 2026-03-14 18:15 UTC  
+**Ended:** 2026-03-14 18:17 UTC  
+**Source:** Claude Code (local session log)
+
+---
+
+## **Human** _2026-03-14 18:15 UTC_
+
+Read @COMP3011_Coursework1_Brief__2025_2026.pdf --- this project is for this coursework.
+
+Read @docs/plans/initial-design.md --- this is my initial design. Discuss with me if you want to change any decisions already made. Identify anything missing or unclear, then produce a finalized design document.
+
+Do not write any code yet. Output a full implementation plan first to @docs/plans/02-final-design.md, broken down into phases.
+
+---
+
+## **Assistant** _2026-03-14 18:15 UTC_
+
+*[Tool call: `Read` --- `/Users/andy/Library/CloudStorage/OneDrive-UniversityofLeeds/Years/202526/2. COMP3011 Web Services and Web Data/Coursework 1/COMP3011-Coursework-1/COMP3011_Coursework1_Brief__2025_2026.pdf`]*
+
+---
+
+## **Assistant** _2026-03-14 18:15 UTC_
+
+*[Tool call: `Glob` --- `docs/**/*`]*
+
+---
+
+## **Assistant** _2026-03-14 18:16 UTC_
+
+*[Tool call: `Read` --- `/Users/andy/Library/CloudStorage/OneDrive-UniversityofLeeds/Years/202526/2. COMP3011 Web Services and Web Data/Coursework 1/COMP3011-Coursework-1/docs/01-initial-design.md`]*
+
+---
+
+## **Assistant** _2026-03-14 18:17 UTC_
+
+Now let me read the initial design fully and plan the final document.
+
+The initial design is solid. Before writing the final document, here are the key gaps I've identified and the decisions I'm making to fill them --- let me know if you disagree with any:
+
+**Gaps I'm filling in (no change to your existing decisions):**
+
+1. **Crisis score formula** --- undefined in your design. I'll specify: weighted composite of volatility (40%), price trend (40%), and baseline deviation from 5-year median (20%), normalized to 0--100.
+2. **Database schema** --- no table-level detail. I'll define all columns, types, FKs, indexes.
+3. **API response envelope** --- undefined. I'll standardise `{data, meta}` for lists and bare objects for single resources; `{error: {code, message}}` for errors.
+4. **Pagination** --- mentioned on the Explorer page but not defined. I'll use offset-based `?page&page_size`.
+5. **MCP framework** --- I'll specify `fastmcp`.
+6. **Docker services** --- I'll define the three services: `db`, `api`, `frontend` (Nginx serving Vite build).
+7. **Data seeding strategy** --- 262k rows is large. I'll specify importing the full dataset via a bulk-insert seed script (not Alembic), but using a 2-year dev subset env flag.
+8. **API docs -> PDF** --- I'll specify: generate from Swagger UI (`/docs`) using a script or browser export.
+9. **GeoJSON source** --- I'll specify `naturalearth` (public domain, standard for Leaflet choropleth).
+
+**One proposed change to discuss:**
+
+The frontend mentions a `/data-entry` page for CRUD with JWT auth. This is fine functionally, but given the 5-minute demo, the most impressive demo flow is: map -> click country -> crisis panel. I'd suggest keeping the data-entry page but making it secondary (a nav link rather than prominent in the demo). Agreed?
+
+Now writing the document:
+
+---
+
+## **Assistant** _2026-03-14 18:17 UTC_
+
+*[Tool call: `Bash` --- `ls "/Users/andy/Library/CloudStorage/OneDrive-UniversityofLeeds/Years/202526/2. COMP3011 Web Services and Web Data/Cours`]*
+
+---
+
+## **Assistant** _2026-03-14 18:17 UTC_
+
+*[Tool call: `Bash` --- `mkdir -p "/Users/andy/Library/CloudStorage/OneDrive-UniversityofLeeds/Years/202526/2. COMP3011 Web Services and Web Data`]*
+
+---
+
+## **Assistant** _2026-03-14 18:17 UTC_
+
+The plans directory doesn't exist yet. The initial design file is at `docs/01-initial-design.md` (not inside a `plans/` subfolder as your structure doc suggested). Should I:
+
+a) Create `docs/plans/` and put the final design at `docs/plans/02-final-design.md`, or  
+b) Put it at `docs/02-final-design.md` alongside the initial design?
+
+---

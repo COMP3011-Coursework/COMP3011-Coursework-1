@@ -1,0 +1,609 @@
+# How to test MCP server for my project?
+
+**Session ID:** `26118e51-0c09-4d2f-96db-d0584e1c1d5e`  
+**Started:** 2026-03-17 23:35 UTC  
+**Ended:** 2026-03-18 00:17 UTC  
+**Source:** Claude Code (local session log)
+
+---
+
+## **Human** _2026-03-17 23:35 UTC_
+
+How to test MCP server for my project?
+
+---
+
+## **Assistant** _2026-03-17 23:35 UTC_
+
+*[Tool call: `Agent`]*
+
+---
+
+## **Assistant** _2026-03-17 23:52 UTC_
+
+*[Tool call: `Read` --- `/Users/andy/Library/CloudStorage/OneDrive-UniversityofLeeds/Years/202526/2. COMP3011 Web Services and Web Data/Coursework 1/COMP3011-Coursework-1/backend/tests/test_mcp.py`]*
+
+---
+
+## **Assistant** _2026-03-17 23:52 UTC_
+
+*[Tool call: `Read` --- `/Users/andy/Library/CloudStorage/OneDrive-UniversityofLeeds/Years/202526/2. COMP3011 Web Services and Web Data/Coursework 1/COMP3011-Coursework-1/backend/tests/conftest.py`]*
+
+---
+
+## **Assistant** _2026-03-17 23:52 UTC_
+
+You already have MCP tests written. Here's how to run them:
+
+## Running the existing MCP unit tests
+
+The tests in [backend/tests/test_mcp.py](backend/tests/test_mcp.py) use mocks (no database needed):
+
+```bash
+conda activate COMP3011-Coursework-1
+cd backend
+pytest tests/test_mcp.py -v
+```
+
+Note: `pytest.ini` or `pyproject.toml` likely configures `asyncio_mode=auto` --- if not, add `-p pytest_asyncio` or ensure your config has it, since all test methods are `async`.
+
+## Testing the live HTTP endpoint
+
+The MCP server is mounted at `/mcp` in the FastAPI app ([backend/app/main.py:123](backend/app/main.py#L123)). With the server running, you can hit it with `curl` or the MCP Inspector:
+
+**1. curl (SSE/HTTP transport):**
+```bash
+curl -X POST http://localhost:8000/mcp \
+  -H "Content-Type: application/json" \
+  -d '{"jsonrpc":"2.0","id":1,"method":"tools/list","params":{}}'
+```
+
+**2. MCP Inspector (official tool):**
+```bash
+npx @modelcontextprotocol/inspector http://localhost:8000/mcp
+```
+Opens a browser UI to call each tool interactively.
+
+**3. Claude Desktop / Claude Code integration** --- add to your MCP config:
+```json
+{
+  "mcpServers": {
+    "food-price": {
+      "url": "http://localhost:8000/mcp"
+    }
+  }
+}
+```
+
+## Quick pytest check for missing asyncio config
+
+---
+
+## **Assistant** _2026-03-17 23:52 UTC_
+
+*[Tool call: `Glob` --- `backend/pytest.ini`]*
+
+---
+
+## **Assistant** _2026-03-17 23:52 UTC_
+
+*[Tool call: `Glob` --- `backend/pyproject.toml`]*
+
+---
+
+## **Assistant** _2026-03-17 23:52 UTC_
+
+*[Tool call: `Read` --- `/Users/andy/Library/CloudStorage/OneDrive-UniversityofLeeds/Years/202526/2. COMP3011 Web Services and Web Data/Coursework 1/COMP3011-Coursework-1/backend/pytest.ini`]*
+
+---
+
+## **Assistant** _2026-03-17 23:52 UTC_
+
+`asyncio_mode = auto` is already set, so async tests work without any extra flags.
+
+## Summary
+
+| Method | Command | Needs DB? |
+|--------|---------|-----------|
+| Unit tests (mocked) | `cd backend && pytest tests/test_mcp.py -v` | No |
+| All backend tests | `cd backend && pytest -v` | Yes (Postgres) |
+| Live endpoint (curl) | `curl -X POST http://localhost:8000/mcp ...` | Yes (server running) |
+| MCP Inspector UI | `npx @modelcontextprotocol/inspector http://localhost:8000/mcp` | Yes (server running) |
+
+The unit tests are the fastest --- they mock the DB and all service calls, so they run in isolation.
+
+---
+
+## **Human** _2026-03-17 23:55 UTC_
+
+how to config claude to test
+
+---
+
+## **Assistant** _2026-03-17 23:56 UTC_
+
+*[Tool call: `Agent`]*
+
+---
+
+## **Assistant** _2026-03-17 23:56 UTC_
+
+## Configure Claude Code to test your MCP server
+
+**Quickest way --- add via CLI:**
+```bash
+claude mcp add --transport http food-price http://localhost:8000/mcp
+```
+
+This saves the config to `~/.claude.json`. To add it at project scope instead (shared via git):
+```bash
+claude mcp add --transport http food-price --scope project http://localhost:8000/mcp
+```
+This creates/updates `.mcp.json` in your project root.
+
+**Or add manually to `.mcp.json` in your project root:**
+```json
+{
+  "mcpServers": {
+    "food-price": {
+      "type": "http",
+      "url": "http://localhost:8000/mcp"
+    }
+  }
+}
+```
+
+**Verify it's registered:**
+```bash
+claude mcp list
+claude mcp get food-price
+```
+
+**Test it --- start a Claude Code session:**
+```bash
+claude
+```
+Then inside the session, run:
+```
+/mcp
+```
+This shows connection status and available tools. You can then ask Claude to call them directly, e.g.:
+> "Use the get_global_crisis_overview tool"
+
+Make sure your backend is running first (`uvicorn app.main:app --reload` from `backend/`).
+
+---
+
+## **Human** _2026-03-18 00:05 UTC_
+
+INFO:     127.0.0.1:55079 - "POST /mcp HTTP/1.1" 307 Temporary Redirect
+INFO:     127.0.0.1:55079 - "POST /mcp/ HTTP/1.1" 404 Not Found
+
+---
+
+## **Assistant** _2026-03-18 00:06 UTC_
+
+Your MCP server is returning a 307 redirect from `/mcp` -> `/mcp/` and then 404 on `/mcp/`. Let me check your backend setup.
+
+---
+
+## **Assistant** _2026-03-18 00:06 UTC_
+
+*[Tool call: `Glob` --- `backend/**/*.py`]*
+
+---
+
+## **Assistant** _2026-03-18 00:06 UTC_
+
+*[Tool call: `Read` --- `/Users/andy/Library/CloudStorage/OneDrive-UniversityofLeeds/Years/202526/2. COMP3011 Web Services and Web Data/Coursework 1/COMP3011-Coursework-1/backend/app/mcp/__init__.py`]*
+
+---
+
+## **Assistant** _2026-03-18 00:06 UTC_
+
+*[Tool call: `Read` --- `/Users/andy/Library/CloudStorage/OneDrive-UniversityofLeeds/Years/202526/2. COMP3011 Web Services and Web Data/Coursework 1/COMP3011-Coursework-1/backend/app/main.py`]*
+
+---
+
+## **Assistant** _2026-03-18 00:06 UTC_
+
+*[Tool call: `Read` --- `/Users/andy/Library/CloudStorage/OneDrive-UniversityofLeeds/Years/202526/2. COMP3011 Web Services and Web Data/Coursework 1/COMP3011-Coursework-1/backend/app/mcp/tools.py`]*
+
+---
+
+## **Assistant** _2026-03-18 00:06 UTC_
+
+The problem is clear. `app.mount("/mcp", ...)` in [main.py:123](backend/app/main.py#L123) causes FastAPI to redirect `POST /mcp` -> `POST /mcp/`, but the MCP sub-app then gets a 404.
+
+There are two fixes:
+
+**Option 1 (quick) --- tell Claude Code to use the trailing slash URL:**
+```bash
+claude mcp remove food-price
+claude mcp add --transport http food-price http://localhost:8000/mcp/
+```
+
+**Option 2 (proper) --- fix the mount path in main.py:**
+
+---
+
+## **Assistant** _2026-03-18 00:06 UTC_
+
+*[Tool call: `Edit` --- `/Users/andy/Library/CloudStorage/OneDrive-UniversityofLeeds/Years/202526/2. COMP3011 Web Services and Web Data/Coursework 1/COMP3011-Coursework-1/backend/app/main.py`]*
+
+---
+
+## **Assistant** _2026-03-18 00:07 UTC_
+
+The diagnostics are just IDE warnings about the conda env not being configured for Pylance --- not real errors.
+
+Let me verify the `path` parameter actually exists in fastmcp before leaving that change in:
+
+---
+
+## **Assistant** _2026-03-18 00:07 UTC_
+
+*[Tool call: `Bash` --- `cd "/Users/andy/Library/CloudStorage/OneDrive-UniversityofLeeds/Years/202526/2. COMP3011 Web Services and Web Data/Cours`]*
+
+---
+
+## **Assistant** _2026-03-18 00:07 UTC_
+
+*[Tool call: `Bash` --- `conda run -n COMP3011-Coursework-1 python -c "import fastmcp; import inspect; src = inspect.getsource(fastmcp.FastMCP.ht`]*
+
+---
+
+## **Assistant** _2026-03-18 00:07 UTC_
+
+*[Tool call: `Bash` --- `conda run -n COMP3011-Coursework-1 python -c "import fastmcp; print(fastmcp.settings.streamable_http_path)"`]*
+
+---
+
+## **Assistant** _2026-03-18 00:07 UTC_
+
+The fix is correct. Here's what was happening:
+
+- FastMCP's default `streamable_http_path` is `/mcp`
+- FastAPI was mounting the sub-app at `/mcp`  
+- So the actual endpoint was at `/mcp/mcp` --- wrong path!
+- Adding `path="/"` makes FastMCP serve at root within the sub-app, so the full path becomes `/mcp/`
+
+Now restart the server and update the Claude Code config:
+
+```bash
+# Restart uvicorn
+uvicorn app.main:app --reload
+
+# If you haven't already added the MCP server:
+claude mcp add --transport http food-price http://localhost:8000/mcp/
+# Or if already added with wrong URL, re-add it:
+claude mcp remove food-price
+claude mcp add --transport http food-price http://localhost:8000/mcp/
+```
+
+The trailing slash in the URL is important --- it avoids the 307 redirect that some clients don't follow correctly for POST requests.
+
+Then test in a Claude Code session:
+```
+/mcp
+```
+
+---
+
+## **Human** _2026-03-18 00:08 UTC_
+
+INFO:     127.0.0.1:56122 - "POST /mcp/ HTTP/1.1" 500 Internal Server Error
+ERROR:    Exception in ASGI application
+Traceback (most recent call last):
+  File "/opt/anaconda3/envs/COMP3011-Coursework-1/lib/python3.14/site-packages/fastmcp/server/http.py", line 40, in __call__
+    await self.session_manager.handle_request(scope, receive, send)
+  File "/opt/anaconda3/envs/COMP3011-Coursework-1/lib/python3.14/site-packages/mcp/server/streamable_http_manager.py", line 144, in handle_request
+    raise RuntimeError("Task group is not initialized. Make sure to use run().")
+RuntimeError: Task group is not initialized. Make sure to use run().
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/opt/anaconda3/envs/COMP3011-Coursework-1/lib/python3.14/site-packages/uvicorn/protocols/http/httptools_impl.py", line 416, in run_asgi
+    result = await app(  # type: ignore[func-returns-value]
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+        self.scope, self.receive, self.send
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "/opt/anaconda3/envs/COMP3011-Coursework-1/lib/python3.14/site-packages/uvicorn/middleware/proxy_headers.py", line 60, in __call__
+    return await self.app(scope, receive, send)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/anaconda3/envs/COMP3011-Coursework-1/lib/python3.14/site-packages/fastapi/applications.py", line 1160, in __call__
+    await super().__call__(scope, receive, send)
+  File "/opt/anaconda3/envs/COMP3011-Coursework-1/lib/python3.14/site-packages/starlette/applications.py", line 107, in __call__
+    await self.middleware_stack(scope, receive, send)
+  File "/opt/anaconda3/envs/COMP3011-Coursework-1/lib/python3.14/site-packages/starlette/middleware/errors.py", line 186, in __call__
+    raise exc
+  File "/opt/anaconda3/envs/COMP3011-Coursework-1/lib/python3.14/site-packages/starlette/middleware/errors.py", line 164, in __call__
+    await self.app(scope, receive, _send)
+  File "/opt/anaconda3/envs/COMP3011-Coursework-1/lib/python3.14/site-packages/starlette/middleware/cors.py", line 87, in __call__
+    await self.app(scope, receive, send)
+  File "/opt/anaconda3/envs/COMP3011-Coursework-1/lib/python3.14/site-packages/starlette/middleware/exceptions.py", line 63, in __call__
+    await wrap_app_handling_exceptions(self.app, conn)(scope, receive, send)
+  File "/opt/anaconda3/envs/COMP3011-Coursework-1/lib/python3.14/site-packages/starlette/_exception_handler.py", line 53, in wrapped_app
+    raise exc
+  File "/opt/anaconda3/envs/COMP3011-Coursework-1/lib/python3.14/site-packages/starlette/_exception_handler.py", line 42, in wrapped_app
+    await app(scope, receive, sender)
+  File "/opt/anaconda3/envs/COMP3011-Coursework-1/lib/python3.14/site-packages/fastapi/middleware/asyncexitstack.py", line 18, in __call__
+    await self.app(scope, receive, send)
+  File "/opt/anaconda3/envs/COMP3011-Coursework-1/lib/python3.14/site-packages/starlette/routing.py", line 716, in __call__
+    await self.middleware_stack(scope, receive, send)
+  File "/opt/anaconda3/envs/COMP3011-Coursework-1/lib/python3.14/site-packages/starlette/routing.py", line 736, in app
+    await route.handle(scope, receive, send)
+  File "/opt/anaconda3/envs/COMP3011-Coursework-1/lib/python3.14/site-packages/starlette/routing.py", line 462, in handle
+    await self.app(scope, receive, send)
+  File "/opt/anaconda3/envs/COMP3011-Coursework-1/lib/python3.14/site-packages/starlette/applications.py", line 107, in __call__
+    await self.middleware_stack(scope, receive, send)
+  File "/opt/anaconda3/envs/COMP3011-Coursework-1/lib/python3.14/site-packages/starlette/middleware/errors.py", line 186, in __call__
+    raise exc
+  File "/opt/anaconda3/envs/COMP3011-Coursework-1/lib/python3.14/site-packages/starlette/middleware/errors.py", line 164, in __call__
+    await self.app(scope, receive, _send)
+  File "/opt/anaconda3/envs/COMP3011-Coursework-1/lib/python3.14/site-packages/fastmcp/server/http.py", line 102, in __call__
+    await self.app(scope, receive, send)
+  File "/opt/anaconda3/envs/COMP3011-Coursework-1/lib/python3.14/site-packages/starlette/middleware/exceptions.py", line 63, in __call__
+    await wrap_app_handling_exceptions(self.app, conn)(scope, receive, send)
+  File "/opt/anaconda3/envs/COMP3011-Coursework-1/lib/python3.14/site-packages/starlette/_exception_handler.py", line 53, in wrapped_app
+    raise exc
+  File "/opt/anaconda3/envs/COMP3011-Coursework-1/lib/python3.14/site-packages/starlette/_exception_handler.py", line 42, in wrapped_app
+    await app(scope, receive, sender)
+  File "/opt/anaconda3/envs/COMP3011-Coursework-1/lib/python3.14/site-packages/starlette/routing.py", line 716, in __call__
+    await self.middleware_stack(scope, receive, send)
+  File "/opt/anaconda3/envs/COMP3011-Coursework-1/lib/python3.14/site-packages/starlette/routing.py", line 736, in app
+    await route.handle(scope, receive, send)
+  File "/opt/anaconda3/envs/COMP3011-Coursework-1/lib/python3.14/site-packages/starlette/routing.py", line 290, in handle
+    await self.app(scope, receive, send)
+  File "/opt/anaconda3/envs/COMP3011-Coursework-1/lib/python3.14/site-packages/fastmcp/server/http.py", line 58, in __call__
+    raise RuntimeError(f"{new_error_message}\\nOriginal error: {e}") from e
+RuntimeError: FastMCP's StreamableHTTPSessionManager task group was not initialized. This commonly occurs when the FastMCP application's lifespan is not passed to the parent ASGI application (e.g., FastAPI or Starlette). Please ensure you are setting `lifespan=mcp_app.lifespan` in your parent app's constructor, where `mcp_app` is the application instance returned by `fastmcp_instance.http_app()`. \nFor more details, see the FastMCP ASGI integration documentation: https://gofastmcp.com/deployment/asgi\nOriginal error: Task group is not initialized. Make sure to use run().
+
+---
+
+## **Assistant** _2026-03-18 00:09 UTC_
+
+The error is explicit: FastMCP's lifespan isn't being wired into FastAPI. We need to compose the two lifespans. Let me fix [main.py](backend/app/main.py):
+
+---
+
+## **Assistant** _2026-03-18 00:09 UTC_
+
+*[Tool call: `Read` --- `/Users/andy/Library/CloudStorage/OneDrive-UniversityofLeeds/Years/202526/2. COMP3011 Web Services and Web Data/Coursework 1/COMP3011-Coursework-1/backend/app/main.py`]*
+
+---
+
+## **Assistant** _2026-03-18 00:09 UTC_
+
+*[Tool call: `Edit` --- `/Users/andy/Library/CloudStorage/OneDrive-UniversityofLeeds/Years/202526/2. COMP3011 Web Services and Web Data/Coursework 1/COMP3011-Coursework-1/backend/app/main.py`]*
+
+---
+
+## **Assistant** _2026-03-18 00:09 UTC_
+
+*[Tool call: `Edit` --- `/Users/andy/Library/CloudStorage/OneDrive-UniversityofLeeds/Years/202526/2. COMP3011 Web Services and Web Data/Coursework 1/COMP3011-Coursework-1/backend/app/main.py`]*
+
+---
+
+## **Assistant** _2026-03-18 00:09 UTC_
+
+*[Tool call: `Edit` --- `/Users/andy/Library/CloudStorage/OneDrive-UniversityofLeeds/Years/202526/2. COMP3011 Web Services and Web Data/Coursework 1/COMP3011-Coursework-1/backend/app/main.py`]*
+
+---
+
+## **Assistant** _2026-03-18 00:09 UTC_
+
+The key changes:
+
+1. **Create `mcp_http_app` at module level** so it can be referenced in both the lifespan and the mount
+2. **Compose the MCP lifespan** inside our `lifespan` context manager with `async with mcp_http_app.lifespan(app)`
+3. **Mount the same instance** rather than creating a new one
+
+Restart uvicorn and it should work now.
+
+---
+
+## **Human** _2026-03-18 00:10 UTC_
+
+INFO:     127.0.0.1:56493 - "GET /mcp/ HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56500 - "POST /mcp/ HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56502 - "POST /mcp/ HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56504 - "POST /mcp/ HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56616 - "GET /.well-known/oauth-authorization-server/mcp HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:56616 - "GET /.well-known/openid-configuration/mcp HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:56616 - "GET /mcp/.well-known/openid-configuration HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:56616 - "GET /.well-known/oauth-protected-resource/mcp HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:56616 - "GET /.well-known/oauth-protected-resource HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:56616 - "GET /.well-known/oauth-authorization-server HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:56616 - "GET /.well-known/openid-configuration HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:56616 - "POST /register HTTP/1.1" 404 Not Foun
+
+Food-price MCP Server                                                                                                                                                                                   ?
+?                                                                                                                                                                                                         ?
+? Status: ? connected                                                                                                                                                                                     ?
+? Auth: ? authenticated                                                                                                                                                                                   ?
+? URL: http://localhost:8000/mcp/                                                                                                                                                                         ?
+? Config location: /Users/andy/.claude.json [project: /Users/andy/Library/CloudStorage/OneDrive-UniversityofLeeds/Years/202526/2. COMP3011 Web Services and Web Data/Coursework 1/COMP3011-Coursework-1]  ?
+? Capabilities: tools                                                                                                                                                                                     ?
+? Tools: 5 tools                                                                                                                                                                                          ?
+?                                                                                                                                                                                                         ?
+? Error: HTTP 404: Invalid OAuth error response: ZodError: [                                                                                                                                              ?
+?   {                                                                                                                                                                                                     ?
+?     "expected": "string",                                                                                                                                                                               ?
+?     "code": "invalid_type",                                                                                                                                                                             ?
+?     "path": [                                                                                                                                                                                           ?
+?       "error"                                                                                                                                                                                           ?
+?     ],                                                                                                                                                                                                  ?
+?     "message": "Invalid input: expected string, received undefined"                                                                                                                                     ?
+?   }                                                                                                                                                                                                     ?
+? ]. Raw body: {"detail":"Not Found"}                                                                                                                                                                     ?
+?                                                                                                                                                                                                         ?
+? ? 1. View tools                                                                                                                                                                                         ?
+?   2. Re-authenticate                                                                                                                                                                                    ?
+?   3. Clear authentication                                                                                                                                                                               ?
+?   4. Reconnect                                                                                                                                                                                          ?
+?   5. Disable
+
+---
+
+## **Assistant** _2026-03-18 00:10 UTC_
+
+It's working. The status shows:
+- **? connected**
+- **? authenticated** 
+- **5 tools available**
+
+The OAuth 404 errors are Claude Code probing for OAuth discovery endpoints (`.well-known/oauth-*`) --- this is normal for unauthenticated MCP servers. Claude Code tries to find auth config, gets 404s, and falls back to no-auth mode. You can ignore those.
+
+Select **"View tools"** to confirm all 5 tools are listed, then you can use them directly in conversation, e.g.:
+
+> "Use get_global_crisis_overview to show the top countries by food price crisis score"
+
+---
+
+## **Human** _2026-03-18 00:13 UTC_
+
+commit
+
+---
+
+## **Assistant** _2026-03-18 00:14 UTC_
+
+*[Tool call: `Skill`]*
+
+---
+
+## **Assistant** _2026-03-18 00:14 UTC_
+
+*[Tool call: `Bash` --- `cd "/Users/andy/Library/CloudStorage/OneDrive-UniversityofLeeds/Years/202526/2. COMP3011 Web Services and Web Data/Cours`]*
+
+---
+
+## **Assistant** _2026-03-18 00:14 UTC_
+
+*[Tool call: `Glob` --- `README*`]*
+
+---
+
+## **Assistant** _2026-03-18 00:14 UTC_
+
+*[Tool call: `Glob` --- `README.md`]*
+
+---
+
+## **Assistant** _2026-03-18 00:14 UTC_
+
+*[Tool call: `Bash` --- `ls "/Users/andy/Library/CloudStorage/OneDrive-UniversityofLeeds/Years/202526/2. COMP3011 Web Services and Web Data/Cours`]*
+
+---
+
+## **Assistant** _2026-03-18 00:14 UTC_
+
+*[Tool call: `Read` --- `/Users/andy/Library/CloudStorage/OneDrive-UniversityofLeeds/Years/202526/2. COMP3011 Web Services and Web Data/Coursework 1/COMP3011-Coursework-1/README.md`]*
+
+---
+
+## **Assistant** _2026-03-18 00:14 UTC_
+
+I can see the README mentions `/mcp/sse` but the server now uses `/mcp/` (streamable HTTP). Let me update both the features section and add a proper MCP usage section.
+
+---
+
+## **Assistant** _2026-03-18 00:14 UTC_
+
+*[Tool call: `Edit` --- `/Users/andy/Library/CloudStorage/OneDrive-UniversityofLeeds/Years/202526/2. COMP3011 Web Services and Web Data/Coursework 1/COMP3011-Coursework-1/README.md`]*
+
+---
+
+## **Assistant** _2026-03-18 00:15 UTC_
+
+*[Tool call: `Edit` --- `/Users/andy/Library/CloudStorage/OneDrive-UniversityofLeeds/Years/202526/2. COMP3011 Web Services and Web Data/Coursework 1/COMP3011-Coursework-1/README.md`]*
+
+---
+
+## **Assistant** _2026-03-18 00:15 UTC_
+
+Now add a dedicated MCP usage section before the Development section:
+
+---
+
+## **Assistant** _2026-03-18 00:15 UTC_
+
+*[Tool call: `Edit` --- `/Users/andy/Library/CloudStorage/OneDrive-UniversityofLeeds/Years/202526/2. COMP3011 Web Services and Web Data/Coursework 1/COMP3011-Coursework-1/README.md`]*
+
+---
+
+## **Assistant** _2026-03-18 00:15 UTC_
+
+Now commit:
+
+---
+
+## **Assistant** _2026-03-18 00:15 UTC_
+
+*[Tool call: `Bash` --- `cd "/Users/andy/Library/CloudStorage/OneDrive-UniversityofLeeds/Years/202526/2. COMP3011 Web Services and Web Data/Cours`]*
+
+---
+
+## **Assistant** _2026-03-18 00:15 UTC_
+
+*[Tool call: `Bash` --- `cd "/Users/andy/Library/CloudStorage/OneDrive-UniversityofLeeds/Years/202526/2. COMP3011 Web Services and Web Data/Cours`]*
+
+---
+
+## **Assistant** _2026-03-18 00:16 UTC_
+
+Let me restructure --- move the MCP content under Advanced features as a subsection.
+
+---
+
+## **Assistant** _2026-03-18 00:16 UTC_
+
+*[Tool call: `Edit` --- `/Users/andy/Library/CloudStorage/OneDrive-UniversityofLeeds/Years/202526/2. COMP3011 Web Services and Web Data/Coursework 1/COMP3011-Coursework-1/README.md`]*
+
+---
+
+## **Assistant** _2026-03-18 00:16 UTC_
+
+Now commit:
+
+---
+
+## **Assistant** _2026-03-18 00:16 UTC_
+
+*[Tool call: `Bash` --- `cd "/Users/andy/Library/CloudStorage/OneDrive-UniversityofLeeds/Years/202526/2. COMP3011 Web Services and Web Data/Cours`]*
+
+---
+
+## **Assistant** _2026-03-18 00:16 UTC_
+
+The Analytics and MCP usage should both be `###` subsections. Let me fix the structure:
+
+---
+
+## **Assistant** _2026-03-18 00:16 UTC_
+
+*[Tool call: `Read` --- `/Users/andy/Library/CloudStorage/OneDrive-UniversityofLeeds/Years/202526/2. COMP3011 Web Services and Web Data/Coursework 1/COMP3011-Coursework-1/README.md`]*
+
+---
+
+## **Assistant** _2026-03-18 00:17 UTC_
+
+*[Tool call: `Edit` --- `/Users/andy/Library/CloudStorage/OneDrive-UniversityofLeeds/Years/202526/2. COMP3011 Web Services and Web Data/Coursework 1/COMP3011-Coursework-1/README.md`]*
+
+---
+
+## **Assistant** _2026-03-18 00:17 UTC_
+
+*[Tool call: `Bash` --- `cd "/Users/andy/Library/CloudStorage/OneDrive-UniversityofLeeds/Years/202526/2. COMP3011 Web Services and Web Data/Cours`]*
+
+---
+
+## **Assistant** _2026-03-18 00:17 UTC_
+
+Done. Committed with both [README.md](README.md) and [backend/app/main.py](backend/app/main.py). The Advanced features section now has `### Analytics` and `### MCP server` as sibling subsections, with `####` sub-subsections for Claude Code, Claude Desktop, and the tools table.
+
+---

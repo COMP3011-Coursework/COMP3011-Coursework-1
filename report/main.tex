@@ -5,6 +5,17 @@
 \usepackage{tabularx}
 \usepackage{amsmath}
 \usepackage{subcaption}
+\usepackage{listings}
+\lstset{
+    basicstyle=\footnotesize\ttfamily,
+    breaklines=true,
+    breakatwhitespace=false,
+    columns=flexible,
+    keepspaces=true,
+    frame=none,
+    aboveskip=0pt,
+    belowskip=0pt,
+}
 \usepackage[
     style=bath,
     block=ragged,
@@ -46,5 +57,10 @@
 
 % bibliography
 \printbibliography
+
+% appendix (not counted in 5-page limit)
+\appendix
+\onecolumn
+\input{appendix}
 
 \end{document}
