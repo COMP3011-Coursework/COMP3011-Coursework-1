@@ -1,0 +1,50 @@
+\documentclass[12pt,a4paper,twocolumn,titlepage]{article}
+\usepackage[margin=1in]{geometry}
+\usepackage{graphicx}
+\usepackage{booktabs}
+\usepackage{tabularx}
+\usepackage{amsmath}
+\usepackage{subcaption}
+\usepackage[
+    style=bath,
+    block=ragged,
+]{biblatex}
+\usepackage[british]{babel}
+\usepackage{hyperref}
+\usepackage{microtype}
+
+% metadata
+\title{%
+    Global Food Price Monitor API\\%
+    \large COMP3011 Coursework 1 Technical Report%
+}
+\author{%
+    Anzhi Zhang\\%
+    201649347%
+}
+\date{}
+
+% hyperref
+\hypersetup{
+    hidelinks,
+    bookmarksnumbered,
+    pdfstartview={FitH},
+}
+
+% biblatex
+\input{LeedsUniHarvardBathPatch}
+\addbibresource{sources.bib}
+
+% document
+\begin{document}
+
+% title
+\maketitle
+
+% content
+\input{content}
+
+% bibliography
+\printbibliography
+
+\end{document}

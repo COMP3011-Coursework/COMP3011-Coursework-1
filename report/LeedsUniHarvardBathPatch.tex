@@ -1,0 +1,107 @@
+% bold volume number for articles
+\DeclareFieldFormat[article]{volume}{\mkbibbold{#1}}
+
+% article number
+\DeclareFieldFormat[article]{eid}{article no:\addspace#1\addspace[no pagination]}
+
+% name year delimiter
+\DeclareDelimFormat[bib,biblist]{nameyeardelim}{\addperiod\space}
+
+% renew isonline
+\renewbibmacro*{isonline}{%
+  \ifboolexpr{(
+      test {\iffieldundef{urlyear}}
+      and
+      not test {\ifentrytype{online}}
+    ) or
+    togl {bbx:onlineshown}
+  }{}{%
+    \addperiod\addspace%
+    \bibstring[\mkbibbrackets]{online}%
+    \toggletrue{bbx:onlineshown}}}
+
+% urldate before url
+\renewbibmacro*{url+urldate}{%
+  \usebibmacro{urldate}%
+  \newunit
+  \usebibmacro{url}%
+}
+
+% date format (day month year)
+\usepackage[british]{babel}
+\usepackage{csquotes}
+
+% set maxcitenames to 2
+\ExecuteBibliographyOptions{maxcitenames=2}
+
+% patch journal+issuetitle, change comma to period after [Online]
+\xpatchbibmacro{journal+issuetitle}{%
+  \usebibmacro{isonline}\setunit*{\addcomma\space}%
+}{%
+  \usebibmacro{isonline}\setunit*{\addperiod\space}%
+}{}{}
+
+%renew event+venue+date with italic eventtitle
+\renewbibmacro*{event+venue+date}{%
+  \mkbibemph{%
+    \printfield{eventtitle}%
+    \setunit*{\addspace}%
+    \printfield{eventtitleaddon}%
+    \ifboolexpr{
+      test {\iffieldundef{venue}}
+      and
+      test {\iffieldundef{eventyear}}
+    }
+    {}
+    {\setunit{\addcomma\space}%
+      \printeventdate
+      \setunit*{\addcomma\space}%
+      \printfield{venue}%
+      \newunit}}}
+
+% set book editor to family-given
+\DeclareNameAlias{bookeditor}{family-given}
+
+% remove comma after book editors
+\xpatchbibmacro{bookeditor}{%
+  \setunit*{\addcomma\space}%
+}{%
+  \setunit*{}%
+}{}{}
+
+% no sentence case for titles
+\DeclareFieldFormat{sentencecase}{#1}
+
+% manuel: put series+type+number before title
+\xpatchbibdriver{manual}{%
+  \usebibmacro{manual:series+type+number}%
+}{%
+}{}{}
+\xpatchbibdriver{manual}{%
+  \usebibmacro{title}%
+}{%
+  \usebibmacro{manual:series+type+number}%
+  \newunit\newblock%
+  \usebibmacro{title}%
+}{}{}
+
+% patch manual:series+type+number, use period instead of comma
+\xpatchbibmacro{manual:series+type+number}{%
+  \setunit{\addcomma\space}%
+  \usebibmacro{series+number}%
+}{%
+  \newunit%
+  \usebibmacro{series+number}%
+}{}{}
+
+% only show available from field when is online
+\DeclareFieldFormat{url}{%
+  \iftoggle{bbx:onlineshown}{%
+    \bibsentence\bibstring{urlfrom}\addcolon\space\url{#1}%
+  }{}%
+}
+\DeclareFieldFormat{doi}{%
+  \iftoggle{bbx:onlineshown}{%
+    \bibsentence\bibstring{urlfrom}\addcolon\space\url{https://doi.org/#1}%
+  }{}%
+}

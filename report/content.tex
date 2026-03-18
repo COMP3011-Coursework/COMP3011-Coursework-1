@@ -1,0 +1,176 @@
+\section{Introduction}
+
+% add paragraphs for introduction
+
+Presentation slides: \url{https://leeds365-my.sharepoint.com/:p:/g/personal/fy22az_leeds_ac_uk/IQAzCfArJhdOSoHPXOb2jwl4Acw6uB58h-HJmVDQevXYUGE?e=V1H29b}
+
+\subsection{Dataset}
+
+Global - Food Prices
+
+\url{https://data.humdata.org/dataset/global-wfp-food-prices}
+
+% quote this
+This dataset contains Countries, Commodities and Markets data, sourced from the World Food Programme Price Database. The World Food Programme Price Database covers foods such as maize, rice, beans, fish, and sugar for 98 countries and some 3000 markets. It is updated weekly but contains to a large extent monthly data. The data goes back as far as 1992 for a few countries, although many countries started reporting from 2003 or thereafter.
+
+License
+Creative Commons Attribution for Intergovernmental Organisations (CC BY-IGO)
+\url{https://creativecommons.org/licenses/by/3.0/igo/legalcode}
+
+% Discuss allowed for this project.
+
+\section{Design}
+
+\subsection{Features}
+
+% CRUD features
+% User System
+% Data Explorer – CRUD Operations on prices
+
+% Advanced features - Analytics
+Price trends – in a specific country
+Commodity volatility – using Coefficient of Variation (CV)
+Regional comparison – which regions face high food costs
+Market summary – number of prices, commodities, latest prices
+Crisis scores – food-crisis indicator (0-100)
+
+%  Advanced features - MCP Server
+get_global_crisis_overview – top 20 most crisis countries
+get_crisis_summary – same as before, for a specific country
+get_price_trends – same
+compare_regional_prices – same
+get_volatile_commodities – same
+
+% Advanced Features - Interactive choropleth map
+
+% Frontend
+% screenshot frontend.png
+
+World Map, Explorer, Data Entry
+API Documentation - Swagger UI, ReDOC
+
+\subsection{System Architecture}
+
+two figures in figures/, architecture.svg and  ERD.html
+
+% write in paragrams, give more reasons and critical analysis of the design choices
+Database
+PostgreSQL – good performance, best practice
+SQLAlchemy – Object Relational Mapping (ORM), not need write SQL
+Alembic – migration
+Backend
+Python – Pythonic, concise, easy to read/write
+FastAPI – modern framework, less code, generated API doc
+Pydantic – verification, typing system
+Frontend
+React – component, reactive, Single Page Application (SPA)
+Typescript – type system
+Tailwind CSS – common practice, easy for GenAI
+Leaflet.js – map
+Chat.js – charts
+Deployment
+Docker (Compose) – easy to migrate
+Testing
+Pytest, pytest-cov – pytest and coverage
+FastAPI TestClient, httpx – http endpoints
+
+\subsection{Database Design}
+
+% describe db design, make relation to dataset
+
+\subsection{API Design}
+
+% list instructions
+
+API Documentation: \url{https://github.com/COMP3011-Coursework/COMP3011-Coursework-1/blob/main/docs/api-reference.pdf}
+
+\section{Implementation}
+
+GenAI chat for
+Explore project idea, dataset
+Decide tech stack
+Discuss initial design
+Manually write an initial design document
+Iterate this document with GenAI
+Use Claude Code to coding with this given design document
+Start project and check design, functions, issues
+Fix and iterate project with Claude Code
+
+\section{Testing}
+
+Automated testing frameworks – pytest, FastAPI TestClient
+100% coverage
+Manually frontend test – design, features
+MCP tests – using Claude Code connected to MCP server
+Ask friends to test
+
+\section{Deployment}
+
+Support
+Self-hosted with Docker Compose
+Render.com \url{https://render.com/}
+Live Demo
+Frontend \url{https://comp3011-coursework-1-frontend.onrender.com/}
+Backend — API docs (Swagger) \url{https://comp3011-coursework-1-backend.onrender.com/docs}
+Backend — API docs (ReDoc) \url{https://comp3011-coursework-1-backend.onrender.com/redoc}
+
+\section{Performance}
+
+Local environment
+~3.14M prices
+~50ms page loading time
+< 1s loading world score loading time and ~100ms data loading time
+Live demo
+~540k (year <=2015) prices
+<200ms page loading time
+~5s and ~2s time corresponding
+Cached GeoJSON — ~14MB, cached at client
+Pagination used, page size parameter
+
+\section{Reflections}
+
+\subsection{Version Control Practices}
+
+Git, 60+ commits
+Self-hosted Gitea with private repository
+Public GitHub repository released before presentation
+Reason for not to use branches for this project
+Simple
+No cooperation or external customer
+Agile
+Conventional Commits \url{https://www.conventionalcommits.org/en/v1.0.0/} used
+A practice to write commit messages
+feat, fix, docs, perf, test, build, ...
+
+\subsection{GenAI Usage}
+
+Project Idea
+Explore Datasets and Understanding Format
+Structure Design and Tech Stack
+Agentic Development and Vibe Coding
+Debugging and Fixing
+Generate Diagrams
+Review the report and presentation
+
+\section{Limitations and Future Work}
+
+% discuss limitations and future work
+
+\section{Conclusions}
+
+% write conclusions
+
+\subsection{Deliverables}
+
+Deployed website
+https://comp3011-coursework-1-frontend.onrender.com
+GitHub code repository
+https://github.com/COMP3011-Coursework/COMP3011-Coursework-1
+API documentation
+https://comp3011-coursework-1-backend.onrender.com/docs
+https://comp3011-coursework-1-backend.onrender.com/redoc
+PDF link available in technical report
+Technical report - submitted via Minerva
+Presentation slides - submitted via Minerva
+
+GitHub repository: \url{https://github.com/COMP3011-Coursework/COMP3011-Coursework-1/tree/main}
