@@ -1,0 +1,16 @@
+# Overview & Idea
+
+**Source:** Claude.ai shared conversation
+**URL:** https://claude.ai/share/c7370728-7d81-42d8-8041-56501efca1b2
+**Topic:** Initial project overview and idea generation for COMP3011 Coursework 1
+
+---
+
+> This conversation took place on Claude.ai (web) before development began in Claude Code.
+> The full transcript is available at the URL above.
+> Claude.ai shared links require a browser with JavaScript to render and cannot be fetched programmatically.
+
+---
+
+**Summary of discussion:**
+This dialog covered the initial ideation and scoping of the COMP3011 Coursework 1 project — a food price crisis web service built on the WFP VAM (World Food Programme Vulnerability Analysis and Mapping) dataset. Topics included understanding the coursework brief, selecting an appropriate dataset, and deciding on the overall system architecture (FastAPI backend, React frontend, MCP server).
