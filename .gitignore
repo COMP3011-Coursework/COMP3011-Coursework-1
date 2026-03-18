@@ -78,8 +78,5 @@ docker-compose.override.yml
 data/
 *.csv
 
-# Alembic
-backend/alembic/versions/*.pyc
-
 # Compiled static assets
 frontend/public/data/world.geojson

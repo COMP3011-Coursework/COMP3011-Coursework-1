@@ -2,7 +2,6 @@ fastapi
 uvicorn[standard]
 sqlalchemy[asyncio]
 greenlet
-alembic
 psycopg[binary]
 pydantic-settings
 fastmcp
