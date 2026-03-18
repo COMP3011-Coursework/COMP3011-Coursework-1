@@ -199,6 +199,8 @@ The production compose override removes the source-code bind mount, runs uvicorn
 
 Interactive API docs (`/docs` Swagger UI, `/redoc`, `/openapi.json`) are served directly from the backend. Endpoint index: [docs/api-index.md](docs/api-index.md). Full reference (PDF): [docs/api-reference.pdf](docs/api-reference.pdf).
 
+Database schema and ERD: [docs/database.md](docs/database.md).
+
 Architecture and implementation plans: [docs/plans/01-initial-design.md](docs/plans/01-initial-design.md), [docs/plans/02-final-design.md](docs/plans/02-final-design.md).
 
 GenAI development logs (Claude Code sessions and Claude.ai web dialogs): [docs/genai-logs/](docs/genai-logs/).
