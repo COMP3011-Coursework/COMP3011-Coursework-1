@@ -22,19 +22,6 @@ Default admin credentials: username `admin`, password `admin123`.
 - **Crisis scoring** — Composite algorithm (volatility + trend + breadth) ranked across all countries
 - **MCP server** — 5 LLM tools exposed over HTTP for use with Claude Code or Claude Desktop
 
-## Tech stack
-
-| Layer | Technology |
-| --- | --- |
-| Backend API | FastAPI + SQLAlchemy 2.x async |
-| Database | PostgreSQL 17 |
-| Auth | JWT (python-jose) + bcrypt (passlib) |
-| MCP server | FastMCP (mounted inside FastAPI at `/mcp`) |
-| Frontend | React 18 + Vite + TypeScript + Tailwind CSS |
-| Maps | Leaflet + react-leaflet |
-| Charts | Chart.js + react-chartjs-2 |
-| Deployment | Docker Compose |
-
 ## Advanced features
 
 Beyond basic CRUD, the application provides analytics endpoints and an MCP server for LLM integration. See [docs/advanced-features.md](docs/advanced-features.md) for full details.
@@ -89,6 +76,19 @@ Add to `claude_desktop_config.json`:
 | `get_price_trends` | Price trend over time for a commodity in a country |
 | `compare_regional_prices` | Compare commodity prices across countries |
 | `get_volatile_commodities` | Most price-volatile commodities globally or per country |
+
+## Tech stack
+
+| Layer | Technology |
+| --- | --- |
+| Backend API | FastAPI + SQLAlchemy 2.x async |
+| Database | PostgreSQL 17 |
+| Auth | JWT (python-jose) + bcrypt (passlib) |
+| MCP server | FastMCP (mounted inside FastAPI at `/mcp`) |
+| Frontend | React 18 + Vite + TypeScript + Tailwind CSS |
+| Maps | Leaflet + react-leaflet |
+| Charts | Chart.js + react-chartjs-2 |
+| Deployment | Docker Compose |
 
 ## Development
 
