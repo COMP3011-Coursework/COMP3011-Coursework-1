@@ -4,6 +4,10 @@
 @tailwind components;
 @tailwind utilities;
 
+html, body, #root {
+  height: 100%;
+}
+
 .leaflet-interactive:focus {
   outline: none;
 }

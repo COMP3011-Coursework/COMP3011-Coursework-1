@@ -579,7 +579,7 @@ export default function DataEntry() {
   const [entries, setEntries] = useState<Price[]>([])
   const [total, setTotal] = useState(0)
   const [page, setPage] = useState(1)
-  const [tableLoading, setTableLoading] = useState(false)
+  const [tableLoading, setTableLoading] = useState(true)
   const [deleteError, setDeleteError] = useState<string | null>(null)
 
   // Reference data

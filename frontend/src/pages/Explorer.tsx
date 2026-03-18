@@ -20,10 +20,10 @@ export default function Explorer() {
   const [prices, setPrices] = useState<Price[]>([])
   const [total, setTotal] = useState(0)
   const [trendPoints, setTrendPoints] = useState<TrendPoint[]>([])
-  const [loading, setLoading] = useState(false)
+  const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
 
-  const PAGE_SIZE = 20
+  const PAGE_SIZE = 10
 
   useEffect(() => {
     Promise.all([getCountries(), getCommodities()]).then(([c, comms]) => {
@@ -149,25 +149,6 @@ export default function Explorer() {
             <span className="text-sm text-gray-600">
               {total.toLocaleString()} results
             </span>
-            <div className="flex items-center gap-2 text-sm">
-              <button
-                onClick={() => search(page - 1)}
-                disabled={page <= 1}
-                className="px-2 py-0.5 border border-gray-300 rounded disabled:opacity-40 hover:bg-gray-50"
-              >
-                ‹ Prev
-              </button>
-              <span className="text-gray-500">
-                {page} / {totalPages}
-              </span>
-              <button
-                onClick={() => search(page + 1)}
-                disabled={page >= totalPages}
-                className="px-2 py-0.5 border border-gray-300 rounded disabled:opacity-40 hover:bg-gray-50"
-              >
-                Next ›
-              </button>
-            </div>
           </div>
 
           <div className="overflow-x-auto">
@@ -204,6 +185,48 @@ export default function Explorer() {
               </tbody>
             </table>
           </div>
+
+          {totalPages > 1 && (
+            <div className="flex items-center justify-between px-4 py-2 border-t border-gray-100 text-xs text-gray-500">
+              <span>Page {page} of {totalPages}</span>
+              <div className="flex gap-1">
+                <button
+                  onClick={() => search(page - 1)}
+                  disabled={page <= 1}
+                  className="px-2 py-1 rounded border border-gray-200 hover:bg-gray-50 disabled:opacity-40 disabled:cursor-not-allowed"
+                >
+                  ‹
+                </button>
+                {Array.from({ length: totalPages }, (_, i) => i + 1)
+                  .filter((n) => n === 1 || n === totalPages || Math.abs(n - page) <= 1)
+                  .reduce<(number | '…')[]>((acc, n, i, arr) => {
+                    if (i > 0 && (n as number) - (arr[i - 1] as number) > 1) acc.push('…')
+                    acc.push(n)
+                    return acc
+                  }, [])
+                  .map((item, i) =>
+                    item === '…' ? (
+                      <span key={`ellipsis-${i}`} className="px-2 py-1">…</span>
+                    ) : (
+                      <button
+                        key={item}
+                        onClick={() => search(item as number)}
+                        className={`px-2 py-1 rounded border ${page === item ? 'bg-blue-600 text-white border-blue-600' : 'border-gray-200 hover:bg-gray-50'}`}
+                      >
+                        {item}
+                      </button>
+                    )
+                  )}
+                <button
+                  onClick={() => search(page + 1)}
+                  disabled={page >= totalPages}
+                  className="px-2 py-1 rounded border border-gray-200 hover:bg-gray-50 disabled:opacity-40 disabled:cursor-not-allowed"
+                >
+                  ›
+                </button>
+              </div>
+            </div>
+          )}
         </div>
       )}
 

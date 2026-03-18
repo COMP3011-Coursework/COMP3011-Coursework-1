@@ -9,7 +9,7 @@ export default function App() {
   return (
     <AuthProvider>
       <BrowserRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
-        <div className="flex flex-col h-screen">
+        <div className="flex flex-col h-full">
           <NavBar />
           <main className="flex flex-1 overflow-hidden">
             <Routes>
