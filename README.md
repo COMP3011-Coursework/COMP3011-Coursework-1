@@ -35,10 +35,6 @@ Default admin credentials: username `admin`, password `admin123`.
 | Charts | Chart.js + react-chartjs-2 |
 | Deployment | Docker Compose |
 
-## API reference
-
-Interactive docs (`/docs` Swagger UI, `/redoc`, `/openapi.json`) are served directly from the backend. Endpoint index: [docs/api-index.md](docs/api-index.md). Full reference (PDF): [docs/api-reference.pdf](docs/api-reference.pdf).
-
 ## Advanced features
 
 Beyond basic CRUD, the application provides analytics endpoints and an MCP server for LLM integration. See [docs/advanced-features.md](docs/advanced-features.md) for full details.
@@ -198,3 +194,11 @@ The production compose override removes the source-code bind mount, runs uvicorn
 | Frontend (nginx) | <http://localhost:80> |
 | API | <http://localhost:8000/api/v1/> |
 | API docs | <http://localhost:8000/docs> |
+
+## Documentation
+
+Interactive API docs (`/docs` Swagger UI, `/redoc`, `/openapi.json`) are served directly from the backend. Endpoint index: [docs/api-index.md](docs/api-index.md). Full reference (PDF): [docs/api-reference.pdf](docs/api-reference.pdf).
+
+Architecture and implementation plans: [docs/plans/01-initial-design.md](docs/plans/01-initial-design.md), [docs/plans/02-final-design.md](docs/plans/02-final-design.md).
+
+GenAI development logs (Claude Code sessions and Claude.ai web dialogs): [docs/genai-logs/](docs/genai-logs/).
